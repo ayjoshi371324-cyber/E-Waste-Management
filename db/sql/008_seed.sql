@@ -14,9 +14,9 @@ ON CONFLICT (role_id) DO NOTHING;
 -- 2. Initial Users
 -- Password for all seed users is 'AdminPass123!' (BCrypt hash)
 INSERT INTO users (id, email, password_hash, full_name, role_id, phone, is_active) VALUES
-    ('00000000-0000-0000-0000-000000000001', 'admin@ewaste.org', '$2b$12$e8Yk2wQO2RkC.jU4rU7.h.rT4a1b0GZ7O8GvPZpZp5vY6nK5G8V2.', 'System Administrator', 1, '+1-555-0100', TRUE),
-    ('00000000-0000-0000-0000-000000000002', 'citizen.jane@example.com', '$2b$12$e8Yk2wQO2RkC.jU4rU7.h.rT4a1b0GZ7O8GvPZpZp5vY6nK5G8V2.', 'Jane Citizen', 2, '+1-555-0200', TRUE),
-    ('00000000-0000-0000-0000-000000000003', 'center.rep@ecocenter.org', '$2b$12$e8Yk2wQO2RkC.jU4rU7.h.rT4a1b0GZ7O8GvPZpZp5vY6nK5G8V2.', 'Robert Representative', 3, '+1-555-0300', TRUE)
+    ('00000000-0000-0000-0000-000000000001', 'admin@ewaste.org', '$2b$12$25C/PEMYHGEvEjo3khCHHOfqeSeK.oI73a1m.ubYPKc6TXUxvkWDu', 'System Administrator', 1, '+1-555-0100', TRUE),
+    ('00000000-0000-0000-0000-000000000002', 'citizen.jane@example.com', '$2b$12$25C/PEMYHGEvEjo3khCHHOfqeSeK.oI73a1m.ubYPKc6TXUxvkWDu', 'Jane Citizen', 2, '+1-555-0200', TRUE),
+    ('00000000-0000-0000-0000-000000000003', 'center.rep@ecocenter.org', '$2b$12$25C/PEMYHGEvEjo3khCHHOfqeSeK.oI73a1m.ubYPKc6TXUxvkWDu', 'Robert Representative', 3, '+1-555-0300', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Device Categories
