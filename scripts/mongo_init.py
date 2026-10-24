@@ -20,13 +20,14 @@ from app.config import get_settings
 
 def init_mongo():
     settings = get_settings()
+    mongo_db_name = getattr(settings, 'MONGO_DB_NAME', getattr(settings, 'MONGO_DB', 'ewaste_meta'))
     print("=" * 60)
     print("MongoDB Initialization Script — Smart E-Waste Recycling")
-    print(f"Target DB: {settings.MONGO_URI} / {settings.MONGO_DB}")
+    print(f"Target DB: {settings.MONGO_URI} / {mongo_db_name}")
     print("=" * 60)
 
     client = MongoClient(settings.MONGO_URI, serverSelectionTimeoutMS=5000)
-    db = client[settings.MONGO_DB]
+    db = client[mongo_db_name]
 
     # 1. device_photo_metadata
     photos = db["device_photo_metadata"]

@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     # MongoDB (Used when MONGO_MODE=mongo)
     MONGO_URI: str = "mongodb://localhost:27017"
     MONGO_DB_NAME: str = "ewaste_meta"
+    MONGO_DB: str = "ewaste_meta"
 
     # Uploads
     UPLOAD_DIR: str = "./uploads"
