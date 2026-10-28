@@ -139,7 +139,7 @@ class RecyclingRecord(BaseModel):
     estimated_units: int = 1
     status: str = "pending"
     notes: Optional[str] = None
-    mongo_photo_id: Optional[UUID] = None
+    photo_id: Optional[UUID] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     category_name: Optional[str] = None
@@ -251,7 +251,7 @@ class LeaderboardEntry(BaseModel):
     rank: int
 
 
-# MongoDB Models
+# Document Models (stored in PostgreSQL JSONB tables)
 class DevicePhotoMeta(BaseModel):
     photo_id: UUID
     record_id: Optional[UUID] = None
@@ -358,7 +358,7 @@ class VerificationRepoBase(ABC):
 
 class RecordsRepoBase(ABC):
     @abstractmethod
-    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], mongo_photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord: ...
+    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord: ...
     @abstractmethod
     async def get_by_id(self, record_id: UUID) -> Optional[RecyclingRecord]: ...
     @abstractmethod

@@ -11,7 +11,7 @@ from app.repositories.base import Receipt, RecordStatusHistory, RecordsRepoBase,
 
 
 class PgRecordsRepo(RecordsRepoBase):
-    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], mongo_photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord:
+    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord:
         record_id = uuid4()
         with get_db_connection() as conn:
             with conn.cursor() as cur:
@@ -19,12 +19,12 @@ class PgRecordsRepo(RecordsRepoBase):
                     """
                     INSERT INTO recycling_records (
                         record_id, user_id, center_id, category_id, weight_kg, estimated_units,
-                        status, notes, mongo_photo_id, created_at, updated_at
+                        status, notes, photo_id, created_at, updated_at
                     ) VALUES (%s, %s, %s, %s, %s, %s, 'pending', %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     RETURNING record_id, user_id, center_id, category_id, weight_kg, estimated_units,
-                              status, notes, mongo_photo_id, created_at, updated_at
+                              status, notes, photo_id, created_at, updated_at
                     """,
-                    (record_id, user_id, center_id, category_id, weight_kg, estimated_units, notes, mongo_photo_id)
+                    (record_id, user_id, center_id, category_id, weight_kg, estimated_units, notes, photo_id)
                 )
                 row = cur.fetchone()
 
@@ -61,7 +61,7 @@ class PgRecordsRepo(RecordsRepoBase):
                 cur.execute(
                     """
                     SELECT r.record_id, r.user_id, r.center_id, r.category_id, r.weight_kg,
-                           r.estimated_units, r.status, r.notes, r.mongo_photo_id, r.created_at, r.updated_at,
+                           r.estimated_units, r.status, r.notes, r.photo_id, r.created_at, r.updated_at,
                            dc.name AS category_name, dc.code AS category_code, rc.name AS center_name,
                            rec.receipt_reference
                     FROM recycling_records r
@@ -83,7 +83,7 @@ class PgRecordsRepo(RecordsRepoBase):
                 cur.execute(
                     """
                     SELECT r.record_id, r.user_id, r.center_id, r.category_id, r.weight_kg,
-                           r.estimated_units, r.status, r.notes, r.mongo_photo_id, r.created_at, r.updated_at,
+                           r.estimated_units, r.status, r.notes, r.photo_id, r.created_at, r.updated_at,
                            dc.name AS category_name, dc.code AS category_code, rc.name AS center_name,
                            rec.receipt_reference
                     FROM recycling_records r
@@ -104,7 +104,7 @@ class PgRecordsRepo(RecordsRepoBase):
                 cur.execute(
                     """
                     SELECT r.record_id, r.user_id, r.center_id, r.category_id, r.weight_kg,
-                           r.estimated_units, r.status, r.notes, r.mongo_photo_id, r.created_at, r.updated_at,
+                           r.estimated_units, r.status, r.notes, r.photo_id, r.created_at, r.updated_at,
                            dc.name AS category_name, dc.code AS category_code, rc.name AS center_name,
                            rec.receipt_reference
                     FROM recycling_records r
@@ -150,7 +150,7 @@ class PgRecordsRepo(RecordsRepoBase):
                         updated_at = CURRENT_TIMESTAMP
                     WHERE record_id = %s
                     RETURNING record_id, user_id, center_id, category_id, weight_kg, estimated_units,
-                              status, notes, mongo_photo_id, created_at, updated_at
+                              status, notes, photo_id, created_at, updated_at
                     """,
                     (reason, f"Rejection reason: {reason}", record_id)
                 )

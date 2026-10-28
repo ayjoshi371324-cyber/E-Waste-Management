@@ -33,6 +33,9 @@
 \echo '==> [9/9] Running 009_verification_tests.sql (GATE VERIFICATION)...'
 \i db/sql/009_verification_tests.sql
 
+\echo '==> [10/10] Running 010_pg_only_tables.sql (PostgreSQL-only migration)...'
+\i db/sql/010_pg_only_tables.sql
+
 \echo '================================================================'
-\echo 'PostgreSQL + PostGIS Phase 1 manual build & validation COMPLETE!'
+\echo 'PostgreSQL full build + PostgreSQL-only migration COMPLETE!'
 \echo '================================================================'

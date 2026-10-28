@@ -363,7 +363,7 @@ class MockDataStore:
         }
         self.user_badges: Dict[UUID, List[UserBadge]] = {}
 
-        # Mongo collections
+        # Document metadata and activity store (mirrors PG tables in mock mode)
         self.device_photos: Dict[UUID, DevicePhotoMeta] = {}
         self.ai_reports: Dict[UUID, AIAnalysisReport] = {}
         self.center_docs: List[CenterDocMeta] = []
