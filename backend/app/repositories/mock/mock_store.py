@@ -170,6 +170,36 @@ class MockDataStore:
                 points_per_kg=10.00,
                 is_active=True,
             ),
+            UUID("11111111-1111-1111-1111-111111110007"): DeviceCategory(
+                category_id=UUID("11111111-1111-1111-1111-111111110007"),
+                code="MONITOR",
+                name="Monitors & Displays",
+                description="Computer monitors, LCD/LED screens, televisions",
+                handling_priority="hazardous",
+                base_points=70,
+                points_per_kg=15.00,
+                is_active=True,
+            ),
+            UUID("11111111-1111-1111-1111-111111110008"): DeviceCategory(
+                category_id=UUID("11111111-1111-1111-1111-111111110008"),
+                code="KEYBOARD_PERIPHERAL",
+                name="Keyboards & Peripherals",
+                description="Keyboards, computer mice, controllers, and input accessories",
+                handling_priority="standard",
+                base_points=25,
+                points_per_kg=12.00,
+                is_active=True,
+            ),
+            UUID("11111111-1111-1111-1111-111111110009"): DeviceCategory(
+                category_id=UUID("11111111-1111-1111-1111-111111110009"),
+                code="CHARGER_CABLE",
+                name="Chargers, Adapters & Cables",
+                description="Power adapters, charging cords, USB cables, connectors",
+                handling_priority="standard",
+                base_points=15,
+                points_per_kg=10.00,
+                is_active=True,
+            ),
         }
 
         # Materials

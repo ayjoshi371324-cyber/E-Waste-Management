@@ -79,6 +79,9 @@ export interface AIClassifyResponse {
   top_predictions: Array<{ category_code: string; confidence: number }>;
   storage_url: string;
   disclaimer: string;
+  is_pdf?: boolean;
+  page_count?: number;
+  images_detected?: number;
 }
 
 export interface RecyclingRecord {
