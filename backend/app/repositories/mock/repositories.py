@@ -176,10 +176,12 @@ class MockCentersRepo(CentersRepoBase):
 
     async def search_nearby(self, lat: float, lng: float, radius_km: float = 25.0, category_id: Optional[UUID] = None, verified_only: bool = True) -> List[CenterSearchResult]:
         target_code = None
-        if category_id:
+        if category_id and isinstance(category_id, UUID):
             cat = self.store.categories.get(category_id)
             if cat:
                 target_code = cat.code
+            else:
+                return []
 
         results: List[CenterSearchResult] = []
         for center in self.store.centers.values():

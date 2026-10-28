@@ -3,21 +3,25 @@
 # the PostgreSQL/PostGIS connection pool using Psycopg 3.
 # In DB_MODE=mock, this pool is NEVER instantiated.
 
+from __future__ import annotations
+
 import logging
 from contextlib import contextmanager
-from typing import Generator, Optional, Any
+from typing import Generator, Optional, Any, TYPE_CHECKING
 
-try:
-    from psycopg_pool import ConnectionPool
-except ImportError:
-    ConnectionPool = Any  # type: ignore
-
-try:
+if TYPE_CHECKING:
     import psycopg
     from psycopg.rows import dict_row
-except ImportError:
-    psycopg = Any  # type: ignore
-    dict_row = Any  # type: ignore
+    from psycopg_pool import ConnectionPool
+else:
+    try:
+        import psycopg
+        from psycopg.rows import dict_row
+        from psycopg_pool import ConnectionPool
+    except ImportError:
+        psycopg = None
+        dict_row = None
+        ConnectionPool = None
 
 from app.config import get_settings
 
@@ -37,6 +41,12 @@ def init_postgres_pool() -> Optional[ConnectionPool]:
     if settings.DB_MODE != "postgres":
         logger.info("DB_MODE is '%s'. Skipping PostgreSQL pool initialization.", settings.DB_MODE)
         return None
+
+    if ConnectionPool is None or dict_row is None:
+        raise RuntimeError(
+            "Psycopg 3 ('psycopg_pool') is required when DB_MODE='postgres'. "
+            "Please install it using: pip install \"psycopg[pool,binary]\""
+        )
 
     if _pool is None:
         logger.info("Initializing Psycopg 3 ConnectionPool to %s:%s/%s...",

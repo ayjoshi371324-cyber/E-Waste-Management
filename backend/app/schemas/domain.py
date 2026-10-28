@@ -70,6 +70,12 @@ class CenterResponse(BaseModel):
     accepted_categories: List[str]
 
 
+class GeocodeResponse(BaseModel):
+    latitude: float
+    longitude: float
+    display_name: str
+
+
 # Record Schemas
 class RecordCreateRequest(BaseModel):
     center_id: UUID

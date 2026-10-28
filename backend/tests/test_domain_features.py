@@ -20,13 +20,134 @@ async def test_categories_and_guidance(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_nearby_centers_spatial_search(client: AsyncClient):
-    # Search around Indiranagar Bengaluru (12.9716, 77.5946) within 15 km
+    # Search around Indiranagar Bengaluru (12.9716, 77.5946) within 15 km via root endpoint
     resp = await client.get("/api/v1/centers?lat=12.9716&lng=77.5946&radius_km=15&verified_only=true")
     assert resp.status_code == 200
     results = resp.json()
     assert len(results) >= 2
     # Verify sorted by distance
     assert results[0]["distance_meters"] <= results[1]["distance_meters"]
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_dedicated_nearby_endpoint(client: AsyncClient):
+    # Dedicated /api/v1/centers/nearby endpoint called by frontend
+    resp = await client.get("/api/v1/centers/nearby?lat=12.9716&lng=77.5946&radius_km=25&verified_only=true")
+    assert resp.status_code == 200
+    results = resp.json()
+    assert len(results) == 3
+    # Check distance ordering
+    assert results[0]["distance_km"] <= results[1]["distance_km"] <= results[2]["distance_km"]
+    assert results[0]["verification_status"] == "verified"
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_category_filtering(client: AsyncClient):
+    # Filter by SMARTPHONE category (category_id = 11111111-1111-1111-1111-111111110001)
+    cat_id = "11111111-1111-1111-1111-111111110001"
+    resp = await client.get(f"/api/v1/centers/nearby?lat=12.9716&lng=77.5946&radius_km=25&category_id={cat_id}")
+    assert resp.status_code == 200
+    results = resp.json()
+    assert len(results) == 2
+    for c in results:
+        assert "SMARTPHONE" in c["accepted_categories"]
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_no_match_small_radius(client: AsyncClient):
+    # Tiny radius of 1 km (no centers in seed exist within 1 km of 12.9716, 77.5946)
+    resp = await client.get("/api/v1/centers/nearby?lat=12.9716&lng=77.5946&radius_km=1&verified_only=true")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_nonexistent_category(client: AsyncClient):
+    # Non-existent category ID returns 0 results cleanly (no 500 error)
+    bad_cat = "99999999-9999-9999-9999-999999999999"
+    resp = await client.get(f"/api/v1/centers/nearby?lat=12.9716&lng=77.5946&radius_km=25&category_id={bad_cat}")
+    assert resp.status_code == 200
+    assert resp.json() == []
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_invalid_coordinates(client: AsyncClient):
+    # Coordinates exceeding geographic range must return 422 validation error
+    resp = await client.get("/api/v1/centers/nearby?lat=999.0&lng=77.5946")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_all_centers_without_coordinates(client: AsyncClient):
+    # Root endpoint without lat/lng returns full list of centers (for dropdowns/admin queue)
+    resp = await client.get("/api/v1/centers")
+    assert resp.status_code == 200
+    centers = resp.json()
+    assert len(centers) >= 4
+    for c in centers:
+        assert "current_verification_status" in c
+        assert "accepted_categories" in c
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_missing_coordinates(client: AsyncClient):
+    # Missing coordinates on /nearby must fail with 422 - NEVER default to Bengaluru
+    resp = await client.get("/api/v1/centers/nearby")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_root_centers_partial_coordinates(client: AsyncClient):
+    # Only one coordinate provided must fail with 400
+    resp1 = await client.get("/api/v1/centers?lat=12.9716")
+    assert resp1.status_code == 400
+    resp2 = await client.get("/api/v1/centers?lng=77.5946")
+    assert resp2.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_geocode_city_and_pincode(client: AsyncClient):
+    # Geocode city
+    resp_city = await client.get("/api/v1/centers/geocode?query=Mumbai")
+    assert resp_city.status_code == 200
+    data = resp_city.json()
+    assert abs(data["latitude"] - 19.0760) < 0.01
+
+    # Geocode PIN
+    resp_pin = await client.get("/api/v1/centers/geocode?query=560038")
+    assert resp_pin.status_code == 200
+    data_pin = resp_pin.json()
+    assert abs(data_pin["latitude"] - 12.9784) < 0.01
+
+
+@pytest.mark.asyncio
+async def test_geocode_unknown_location(client: AsyncClient):
+    resp = await client.get("/api/v1/centers/geocode?query=unknownplace999999xyz")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_nearby_centers_nashik_search(client: AsyncClient):
+    # Test searching around Nashik CBS (19.9975, 73.7898)
+    # 25 km radius, verified_only=true: returns certified center (M. S. Malik in Vilholi)
+    resp = await client.get("/api/v1/centers/nearby?lat=19.9975&lng=73.7898&radius_km=25&verified_only=true")
+    assert resp.status_code == 200
+    results = resp.json()
+    assert len(results) >= 1
+    assert "M. S. Malik" in results[0]["name"]
+    assert results[0]["distance_km"] < 15.0
+
+    # 25 km radius, verified_only=false: returns all facilities including expired authorizations
+    resp_all = await client.get("/api/v1/centers/nearby?lat=19.9975&lng=73.7898&radius_km=25&verified_only=false")
+    assert resp_all.status_code == 200
+    results_all = resp_all.json()
+    assert len(results_all) >= 5
+
+    # 35 km radius, verified_only=true: includes Sinnar facilities (Mayra, Trishulin)
+    resp_35 = await client.get("/api/v1/centers/nearby?lat=19.9975&lng=73.7898&radius_km=35&verified_only=true")
+    assert resp_35.status_code == 200
+    results_35 = resp_35.json()
+    assert len(results_35) >= 3
 
 
 @pytest.mark.asyncio
