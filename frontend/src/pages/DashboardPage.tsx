@@ -40,15 +40,17 @@ import {
   Business as BusinessIcon,
   Shield as ShieldIcon,
   PrecisionManufacturing as ProcessIcon,
+  PlayArrow as PlayIcon,
+  Pause as PauseIcon,
+  VolumeUp as VolumeUpIcon,
+  VolumeOff as VolumeOffIcon,
 } from '@mui/icons-material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { CommunityDashboard, ImpactSummaryReport, PersonalDashboard } from '../types';
-import { QuoteCalculatorModal } from '../components/QuoteCalculatorModal';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useCountUp } from '../hooks/useCountUp';
-import heroImg from '../assets/smart_waste_hero.jpg';
 
 export const DashboardPage: React.FC = () => {
   const { user, balance } = useAuth();
@@ -59,17 +61,35 @@ export const DashboardPage: React.FC = () => {
   const [communityData, setCommunityData] = useState<CommunityDashboard | null>(null);
   const [summaryReport, setSummaryReport] = useState<ImpactSummaryReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const [quoteOpen, setQuoteOpen] = useState(false);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
 
-  // Scroll Reveal Observers for each section
+  // Video Background Control State
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+
+  const toggleVideoPlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      } else {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      }
+    }
+  };
+
+  const toggleVideoMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsVideoMuted(videoRef.current.muted);
+    }
+  };
+
+  // Scroll Reveal Observers for active sections
   const statsReveal = useScrollReveal({ threshold: 0.1 });
-  const servicesReveal = useScrollReveal({ threshold: 0.1 });
   const howReveal = useScrollReveal({ threshold: 0.1 });
   const analyticsReveal = useScrollReveal({ threshold: 0.1 });
-  const aboutReveal = useScrollReveal({ threshold: 0.1 });
-  const teamReveal = useScrollReveal({ threshold: 0.1 });
-  const contactReveal = useScrollReveal({ threshold: 0.1 });
 
   // Animated Numeric Counters when statistics section is in viewport
   const animatedKg = useCountUp(communityData?.total_measured_kg_recycled ?? 18450, {
@@ -170,13 +190,6 @@ export const DashboardPage: React.FC = () => {
     }
   }, [loading, location.hash]);
 
-  const scrollToServices = () => {
-    const elem = document.getElementById('services');
-    if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -211,28 +224,67 @@ export const DashboardPage: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          {/* Subtle slow zoom-out background photography layer */}
+          {/* High-Definition E-Waste Facility Video Layer */}
           <Box
-            className="hero-bg-animated"
+            component="video"
+            ref={videoRef}
+            autoPlay
+            loop
+            muted={isVideoMuted}
+            playsInline
+            poster="/hero_video_poster.jpg"
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: `url(${heroImg}), url('/smart_waste_hero.jpg')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 35%',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
               zIndex: 0,
+              filter: 'brightness(0.72) contrast(1.08)',
             }}
-          />
+          >
+            <source src="/smart_waste_hero.mp4" type="video/mp4" />
+          </Box>
 
           {/* Cinematic Dark Eco Gradient Overlay for crystal-clear readability */}
           <Box
             sx={{
               position: 'absolute',
               inset: 0,
-              background: 'radial-gradient(circle at center, rgba(8, 20, 11, 0.45) 0%, rgba(4, 12, 6, 0.78) 75%, rgba(2, 8, 4, 0.92) 100%)',
+              background: 'radial-gradient(circle at center, rgba(8, 20, 11, 0.40) 0%, rgba(4, 12, 6, 0.76) 72%, rgba(2, 8, 4, 0.94) 100%)',
               zIndex: 1,
             }}
           />
+
+          {/* Subtle Video Live View Controls Pill */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: { xs: 16, sm: 22 },
+              right: { xs: 16, sm: 24 },
+              zIndex: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              bgcolor: 'rgba(7, 18, 10, 0.72)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(155, 227, 36, 0.28)',
+              borderRadius: '9999px',
+              px: 1.5,
+              py: 0.5,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            }}
+          >
+            <IconButton size="small" onClick={toggleVideoPlay} sx={{ color: '#9be324', p: 0.5 }}>
+              {isVideoPlaying ? <PauseIcon sx={{ fontSize: 18 }} /> : <PlayIcon sx={{ fontSize: 18 }} />}
+            </IconButton>
+            <IconButton size="small" onClick={toggleVideoMute} sx={{ color: '#e4eee7', p: 0.5 }}>
+              {isVideoMuted ? <VolumeOffIcon sx={{ fontSize: 18 }} /> : <VolumeUpIcon sx={{ fontSize: 18 }} />}
+            </IconButton>
+            <Typography variant="caption" sx={{ color: '#9eb5a5', fontSize: '0.72rem', fontWeight: 600, pr: 0.5, display: { xs: 'none', sm: 'inline' } }}>
+              E-Waste Facility Stream
+            </Typography>
+          </Box>
 
           {/* Hero Content Container */}
           <Box
@@ -246,25 +298,7 @@ export const DashboardPage: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            {/* Top Pill Badge with Staggered Entrance */}
-            <Chip
-              className="hero-anim-badge"
-              icon={<EcoIcon sx={{ color: '#07160c !important', fontSize: 16 }} />}
-              label="CERTIFIED CIRCULAR E-WASTE PLATFORM"
-              sx={{
-                mb: { xs: 2.5, md: 3 },
-                bgcolor: '#9be324',
-                color: '#07160c',
-                fontWeight: 800,
-                fontSize: { xs: '0.68rem', sm: '0.75rem' },
-                letterSpacing: '0.08em',
-                px: 1.5,
-                py: 0.5,
-                boxShadow: '0 4px 18px rgba(155, 227, 36, 0.4)',
-              }}
-            />
-
-            {/* Display Headline - verbatim matching the screenshot typography */}
+            {/* Display Headline */}
             <Typography
               component="h1"
               className="hero-anim-title"
@@ -279,10 +313,10 @@ export const DashboardPage: React.FC = () => {
                 mb: { xs: 2.5, md: 3 },
               }}
             >
-              Smart Waste Collection For A Cleaner Tomorrow
+              Smart E-Waste Recycling & Material Recovery
             </Typography>
 
-            {/* Sub-headline text - verbatim matching the screenshot */}
+            {/* Sub-headline text */}
             <Typography
               className="hero-anim-desc"
               sx={{
@@ -290,113 +324,17 @@ export const DashboardPage: React.FC = () => {
                 fontSize: { xs: '0.98rem', sm: '1.1rem', md: '1.2rem' },
                 lineHeight: 1.65,
                 color: '#e4eee7',
-                maxWidth: 820,
+                maxWidth: 840,
                 mx: 'auto',
-                mb: { xs: 4, md: 5 },
+                mb: 0,
                 textShadow: '0 2px 12px rgba(0, 0, 0, 0.9)',
                 fontWeight: 400,
               }}
             >
-              We help communities, businesses, and cities manage waste efficiently through smart collection,
-              recycling, and eco-friendly disposal services. Building cleaner environments with sustainable
-              waste management solutions.
+              Recover · Recycle · Reuse. We empower communities, businesses, and certified recyclers to manage
+              electronic waste efficiently through intelligent collection, conveyor sorting, and closed-loop
+              component recovery for a sustainable circular economy.
             </Typography>
-
-            {/* The Two Distinctive Action Buttons matching the reference screenshot */}
-            <Stack
-              className="hero-anim-cta"
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={{ xs: 2, sm: 2.5 }}
-              sx={{
-                width: { xs: '100%', sm: 'auto' },
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {/* Button 1: Primary Electric Lime Pill with Arrow Chip */}
-              <Button
-                variant="contained"
-                className="btn-premium-interactive"
-                onClick={() => setQuoteOpen(true)}
-                sx={{
-                  bgcolor: '#9be324',
-                  color: '#07160c',
-                  px: { xs: 3.5, md: 4 },
-                  py: { xs: 1.4, md: 1.6 },
-                  borderRadius: '9999px',
-                  fontWeight: 800,
-                  fontSize: { xs: '1rem', md: '1.08rem' },
-                  boxShadow: '0 8px 30px rgba(155, 227, 36, 0.45)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  minWidth: { xs: '100%', sm: 220 },
-                  justifyContent: 'center',
-                  '&:hover': {
-                    bgcolor: '#a8ee30',
-                    boxShadow: '0 12px 35px rgba(155, 227, 36, 0.65)',
-                  },
-                }}
-              >
-                <span>Get Free Quote</span>
-                <Box
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: '50%',
-                    bgcolor: '#07160c',
-                    color: '#9be324',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <ArrowIcon className="btn-arrow-icon" sx={{ fontSize: 16 }} />
-                </Box>
-              </Button>
-
-              {/* Button 2: Crisp White Pill with Arrow Chip */}
-              <Button
-                variant="contained"
-                className="btn-premium-interactive"
-                onClick={scrollToServices}
-                sx={{
-                  bgcolor: '#ffffff',
-                  color: '#07160c',
-                  px: { xs: 3.5, md: 4 },
-                  py: { xs: 1.4, md: 1.6 },
-                  borderRadius: '9999px',
-                  fontWeight: 800,
-                  fontSize: { xs: '1rem', md: '1.08rem' },
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  minWidth: { xs: '100%', sm: 200 },
-                  justifyContent: 'center',
-                  '&:hover': {
-                    bgcolor: '#f2f8f3',
-                    boxShadow: '0 12px 30px rgba(255, 255, 255, 0.35)',
-                  },
-                }}
-              >
-                <span>Our Services</span>
-                <Box
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: '50%',
-                    bgcolor: '#07160c',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <ArrowIcon className="btn-arrow-icon" sx={{ fontSize: 16 }} />
-                </Box>
-              </Button>
-            </Stack>
           </Box>
         </Box>
       </Container>
@@ -415,21 +353,21 @@ export const DashboardPage: React.FC = () => {
         <Grid container spacing={2.5}>
           {[
             {
-              label: 'MEASURED E-WASTE DIVERTED',
+              label: 'MEASURED E-WASTE RECOVERED',
               value: `${animatedKg.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`,
-              sub: 'Physical weigh-ins verified at certified centers',
+              sub: 'Physical weigh-ins verified at certified dismantling centers',
               icon: <ScaleIcon sx={{ color: '#9be324' }} />,
               color: '#9be324',
             },
             {
-              label: 'CO₂ EMISSIONS SAVED',
+              label: 'CO₂ EMISSIONS PREVENTED',
               value: `${animatedCo2.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`,
-              sub: 'Avoided lifecycle manufacturing & mining burden',
+              sub: 'Avoided toxic landfill leachates & mineral mining burden',
               icon: <Co2Icon sx={{ color: '#38bdf8' }} />,
               color: '#38bdf8',
             },
             {
-              label: 'AUTHORIZED DROP-OFF CENTERS',
+              label: 'AUTHORIZED RECYCLING CENTERS',
               value: `${animatedCenters}`,
               sub: 'PostGIS verified R2 & CPCB licensed facilities',
               icon: <MapIcon sx={{ color: '#f59e0b' }} />,
@@ -438,7 +376,7 @@ export const DashboardPage: React.FC = () => {
             {
               label: 'ECO REWARD POINTS DISTRIBUTED',
               value: `${animatedPoints.toLocaleString()} pts`,
-              sub: `${communityData?.total_rewards_redeemed ?? 128} verified redemptions claimed`,
+              sub: `${communityData?.total_rewards_redeemed ?? 128} verified redemptions claimed by citizens`,
               icon: <GiftIcon sx={{ color: '#c084fc' }} />,
               color: '#c084fc',
             },
@@ -501,171 +439,6 @@ export const DashboardPage: React.FC = () => {
 
       {/* 
         ========================================================================
-        CORE SERVICES SECTION (#services - Staggered scroll reveal)
-        ========================================================================
-      */}
-      <Box id="services" ref={servicesReveal.ref} sx={{ py: 6, position: 'relative' }}>
-        <Container maxWidth="xl" className={`scroll-reveal ${servicesReveal.isRevealed ? 'revealed' : ''}`}>
-          <Box sx={{ textAlign: 'center', maxWidth: 760, mx: 'auto', mb: 6 }}>
-            <Chip
-              label="OUR COMPREHENSIVE SERVICES"
-              sx={{
-                bgcolor: 'rgba(155, 227, 36, 0.15)',
-                color: '#9be324',
-                fontWeight: 800,
-                fontSize: '0.75rem',
-                letterSpacing: '0.08em',
-                mb: 2,
-              }}
-            />
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: '"Outfit", sans-serif',
-                fontWeight: 800,
-                fontSize: { xs: '2rem', md: '3rem' },
-                color: '#f4fbf5',
-                mb: 2,
-              }}
-            >
-              Complete Smart E-Waste Solutions
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#9eb5a5', lineHeight: 1.7 }}>
-              From instant computer vision diagnosis to certified drop-off logistics and immutable digital receipts,
-              we ensure 100% circularity and zero illegal landfill dumping.
-            </Typography>
-          </Box>
-
-          <Grid container spacing={3}>
-            {[
-              {
-                title: 'AI Device Identifier & Diagnostic',
-                desc: 'Upload a quick photo of any obsolete gadget. Our AI MobileNetV3 model automatically classifies device category, hazard rating, and estimated recovery value.',
-                icon: <AIIcon sx={{ fontSize: 32, color: '#9be324' }} />,
-                cta: 'Launch AI Classifier',
-                link: '/ai-classify',
-                tag: 'INSTANT DETECTION',
-              },
-              {
-                title: 'Certified Proximity Center Locator',
-                desc: 'Locate verified R2 and CPCB-registered electronic waste collection centers using PostGIS spatial proximity search with accepted material filtering.',
-                icon: <MapIcon sx={{ fontSize: 32, color: '#9be324' }} />,
-                cta: 'Locate Centers Nearby',
-                link: '/centers',
-                tag: 'POSTGIS SPATIAL SEARCH',
-              },
-              {
-                title: 'Verifiable Chain of Custody & Receipts',
-                desc: 'Generate cryptographic digital receipts and tamper-evident audit trails. Perfect for enterprise CSR reporting and regulatory extended producer responsibility.',
-                icon: <ShieldIcon sx={{ fontSize: 32, color: '#9be324' }} />,
-                cta: 'Submit Drop-off Evidence',
-                link: '/submit',
-                tag: 'CRYPTO VERIFIED',
-              },
-              {
-                title: 'Circular Eco-Points & Rewards',
-                desc: 'Convert recycled gadgets into verified reward points with transactional single-award guarantees. Redeem for vouchers, tech discounts, or tree planting.',
-                icon: <GiftIcon sx={{ fontSize: 32, color: '#9be324' }} />,
-                cta: 'Explore Reward Catalog',
-                link: '/rewards',
-                tag: 'TRANSACTIONAL REWARDS',
-              },
-            ].map((service, idx) => (
-              <Grid
-                size={{ xs: 12, sm: 6, lg: 3 }}
-                key={idx}
-                className={`scroll-reveal ${servicesReveal.isRevealed ? 'revealed' : ''} stagger-${(idx % 4) + 1}`}
-              >
-                <Card
-                  className="card-interactive"
-                  sx={{
-                    p: 3.5,
-                    borderRadius: '28px',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-                      <Box
-                        className="card-icon-zoom"
-                        sx={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: '20px',
-                          bgcolor: 'rgba(155, 227, 36, 0.1)',
-                          border: '1px solid rgba(155, 227, 36, 0.25)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {service.icon}
-                      </Box>
-                      <Chip
-                        label={service.tag}
-                        size="small"
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.05)',
-                          color: '#a3b8aa',
-                          fontSize: '0.65rem',
-                          fontWeight: 700,
-                        }}
-                      />
-                    </Box>
-
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontFamily: '"Outfit", sans-serif',
-                        fontWeight: 700,
-                        color: '#f4fbf5',
-                        mb: 1.5,
-                      }}
-                    >
-                      {service.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9eb5a5', lineHeight: 1.6, mb: 3 }}>
-                      {service.desc}
-                    </Typography>
-                  </Box>
-
-                  <Button
-                    component={Link}
-                    to={service.link}
-                    variant="outlined"
-                    fullWidth
-                    className="btn-premium-interactive"
-                    sx={{
-                      borderColor: 'rgba(155, 227, 36, 0.35)',
-                      color: '#9be324',
-                      borderRadius: '9999px',
-                      fontWeight: 700,
-                      py: 1.2,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      '&:hover': {
-                        borderColor: '#9be324',
-                        bgcolor: 'rgba(155, 227, 36, 0.1)',
-                      },
-                    }}
-                  >
-                    <span>{service.cta}</span>
-                    <ArrowIcon className="btn-arrow-icon" sx={{ fontSize: 18 }} />
-                  </Button>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* 
-        ========================================================================
         HOW IT WORKS - 4 SIMPLE STEPS (Scroll Reveal with Staggered Steps)
         ========================================================================
       */}
@@ -696,23 +469,23 @@ export const DashboardPage: React.FC = () => {
             {[
               {
                 step: '01',
-                title: 'Identify & Value Gadget',
-                text: 'Snap a picture using our AI Diagnostic or pick from our verified device catalog for immediate scrap valuation.',
+                title: 'AI Device Diagnosis & Scrap Valuation',
+                text: 'Upload photos or device details to classify obsolete electronics, analyze visual components, and get instant scrap valuations.',
               },
               {
                 step: '02',
-                title: 'Choose Drop-off Center',
-                text: 'Find authorized R2/CPCB collection facilities nearest to you with GPS navigation and category verification.',
+                title: 'Locate Verified Collection Centers',
+                text: 'Find authorized CPCB & R2 collection facilities near you with GPS navigation, verified operational hours, and material acceptances.',
               },
               {
                 step: '03',
-                title: 'Safe Handover & Weighing',
-                text: 'Drop off at the center. The facility weighs the devices and issues an immutable digital receipt with hash audit trail.',
+                title: 'Conveyor Sorting & Component Recovery',
+                text: 'Certified technicians systematically dismantle devices on industrial conveyor lines, sorting PCBs, wiring, and lithium cells into closed-loop recovery streams.',
               },
               {
                 step: '04',
-                title: 'Earn & Redeem Rewards',
-                text: 'Points credit directly to your double-entry ledger. Spend points for gift cards, gadgets, or plant native trees.',
+                title: 'Immutable Receipts & Eco Rewards',
+                text: 'Receive cryptographic weight receipts with SHA-256 audit trails, and earn instant double-entry eco points redeemable for gift vouchers or green initiatives.',
               },
             ].map((step, idx) => (
               <Grid
@@ -935,411 +708,6 @@ export const DashboardPage: React.FC = () => {
           </Box>
         )}
       </Container>
-
-      {/* 
-        ========================================================================
-        ABOUT US SECTION (#about)
-        ========================================================================
-      */}
-      <Box id="about" ref={aboutReveal.ref} sx={{ py: 8, bgcolor: 'rgba(14, 31, 20, 0.4)' }}>
-        <Container maxWidth="xl" className={`scroll-reveal ${aboutReveal.isRevealed ? 'revealed' : ''}`}>
-          <Grid container spacing={5} sx={{ alignItems: 'center' }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Chip
-                label="ABOUT SMART WASTE PLATFORM"
-                sx={{
-                  bgcolor: 'rgba(155, 227, 36, 0.15)',
-                  color: '#9be324',
-                  fontWeight: 800,
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.08em',
-                  mb: 2,
-                }}
-              />
-              <Typography
-                variant="h2"
-                sx={{
-                  fontFamily: '"Outfit", sans-serif',
-                  fontWeight: 800,
-                  fontSize: { xs: '2rem', md: '2.8rem' },
-                  color: '#f4fbf5',
-                  mb: 2.5,
-                }}
-              >
-                Pioneering Closed-Loop Urban E-Waste Stewardship
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#c8ded0', lineHeight: 1.75, mb: 3 }}>
-                Electronics contain both critical valuable commodities—such as gold, silver, copper, and rare earths—and
-                hazardous substances like lead, mercury, and toxic brominated flame retardants.
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#c8ded0', lineHeight: 1.75, mb: 4 }}>
-                Smart Waste bridges the gap between consumers, enterprises, and certified recyclers. With strict NIST 800-88
-                data sanitization guarantees and PostGIS geospatial routing, we make certified circular recycling rewarding,
-                transparent, and accessible to everyone.
-              </Typography>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <Button
-                  variant="contained"
-                  className="btn-premium-interactive"
-                  onClick={() => setQuoteOpen(true)}
-                  sx={{
-                    bgcolor: '#9be324',
-                    color: '#07160c',
-                    px: 3.5,
-                    py: 1.3,
-                    borderRadius: '9999px',
-                    fontWeight: 800,
-                  }}
-                >
-                  Get Instant Valuation ↗
-                </Button>
-                <Button
-                  component={Link}
-                  to="/guide"
-                  variant="outlined"
-                  className="btn-premium-interactive"
-                  sx={{
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    color: '#f4fbf5',
-                    px: 3,
-                    py: 1.3,
-                    borderRadius: '9999px',
-                    fontWeight: 700,
-                  }}
-                >
-                  View Material Guide
-                </Button>
-              </Stack>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box
-                className="card-interactive"
-                sx={{
-                  p: { xs: 3, md: 4 },
-                  borderRadius: '32px',
-                  background: 'linear-gradient(145deg, #0f2617 0%, #08150c 100%)',
-                  border: '1px solid rgba(155, 227, 36, 0.25)',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
-                }}
-              >
-                <Typography variant="h5" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 3 }}>
-                  Our Sustainability Commitments
-                </Typography>
-                <Stack spacing={2.5}>
-                  {[
-                    {
-                      title: '100% Zero-Landfill Guarantee',
-                      desc: 'Every gram of non-recoverable hazardous material is treated at licensed hazardous facilities.',
-                    },
-                    {
-                      title: 'NIST 800-88 Certified Data Wipe',
-                      desc: 'Hardware serial tracking and cryptographic destruction certificates provided for all storage media.',
-                    },
-                    {
-                      title: 'Verifiable Double-Entry Ledger',
-                      desc: 'Zero fake points. Every reward is tied to actual physical weigh-in at authorized centers.',
-                    },
-                  ].map((item, i) => (
-                    <Box key={i} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                      <Box
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: '50%',
-                          bgcolor: '#9be324',
-                          color: '#07160c',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          flexShrink: 0,
-                          mt: 0.3,
-                        }}
-                      >
-                        ✓
-                      </Box>
-                      <Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#f4fbf5' }}>
-                          {item.title}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#9eb5a5', lineHeight: 1.5 }}>
-                          {item.desc}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Stack>
-              </Box>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* 
-        ========================================================================
-        TEAM & TRUST BADGES SECTION (#team)
-        ========================================================================
-      */}
-      <Container id="team" ref={teamReveal.ref} maxWidth="xl" sx={{ py: 8 }}>
-        <Box className={`scroll-reveal ${teamReveal.isRevealed ? 'revealed' : ''}`}>
-          <Box sx={{ textAlign: 'center', maxWidth: 700, mx: 'auto', mb: 6 }}>
-            <Chip
-              label="CERTIFIED EXPERTISE"
-              sx={{
-                bgcolor: 'rgba(155, 227, 36, 0.15)',
-                color: '#9be324',
-                fontWeight: 800,
-                fontSize: '0.75rem',
-                letterSpacing: '0.08em',
-                mb: 2,
-              }}
-            />
-            <Typography variant="h2" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 2 }}>
-              Leadership & Environmental Compliance
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#9eb5a5' }}>
-              Built by environmental engineers, AI researchers, and certified supply chain auditors.
-            </Typography>
-          </Box>
-
-          <Grid container spacing={3}>
-            {[
-              {
-                name: 'Dr. Aris Thorne',
-                role: 'Chief Environmental Scientist',
-                spec: 'PhD in Circular Metallurgy & Hazardous Material Flow',
-                badge: 'CPCB Certified Assessor',
-              },
-              {
-                name: 'Elena Rostova',
-                role: 'VP of Geospatial & Logistics',
-                spec: 'PostGIS Spatial Routing & Center Verification Network',
-                badge: 'R2v3 Lead Auditor',
-              },
-              {
-                name: 'Kavita Menon',
-                role: 'Lead AI & Computer Vision',
-                spec: 'Edge Deep Learning for Automated Scrap Categorization',
-                badge: 'IEEE Sustainability',
-              },
-              {
-                name: 'Marcus Vance',
-                role: 'Director of Corporate EPR & ESG',
-                spec: 'Enterprise IT Asset Disposition & Chain of Custody',
-                badge: 'NIST 800-88 Specialist',
-              },
-            ].map((member, i) => (
-              <Grid
-                size={{ xs: 12, sm: 6, md: 3 }}
-                key={i}
-                className={`scroll-reveal ${teamReveal.isRevealed ? 'revealed' : ''} stagger-${(i % 4) + 1}`}
-              >
-                <Card className="card-interactive" sx={{ p: 3, borderRadius: '24px', textAlign: 'center', height: '100%' }}>
-                  <Box
-                    className="card-icon-zoom"
-                    sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: '50%',
-                      bgcolor: 'rgba(155, 227, 36, 0.15)',
-                      border: '2px solid #9be324',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mx: 'auto',
-                      mb: 2,
-                      color: '#9be324',
-                    }}
-                  >
-                    <TeamIcon sx={{ fontSize: 36 }} />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, color: '#f4fbf5' }}>
-                    {member.name}
-                  </Typography>
-                  <Typography variant="subtitle2" sx={{ color: '#9be324', fontWeight: 700, mb: 1 }}>
-                    {member.role}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#9eb5a5', display: 'block', mb: 2, lineHeight: 1.5 }}>
-                    {member.spec}
-                  </Typography>
-                  <Chip
-                    label={member.badge}
-                    size="small"
-                    sx={{ bgcolor: 'rgba(255,255,255,0.06)', color: '#d4ebd9', fontSize: '0.7rem' }}
-                  />
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Container>
-
-      {/* 
-        ========================================================================
-        CONTACT & CORPORATE COLLECTION SECTION (#contact)
-        ========================================================================
-      */}
-      <Box
-        id="contact"
-        ref={contactReveal.ref}
-        className={`scroll-reveal ${contactReveal.isRevealed ? 'revealed' : ''}`}
-        sx={{ py: 8, bgcolor: 'rgba(14, 31, 20, 0.6)', borderTop: '1px solid rgba(155, 227, 36, 0.15)' }}
-      >
-        <Container maxWidth="lg">
-          <Grid container spacing={5} sx={{ alignItems: 'center' }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Chip
-                label="GET IN TOUCH"
-                sx={{
-                  bgcolor: 'rgba(155, 227, 36, 0.15)',
-                  color: '#9be324',
-                  fontWeight: 800,
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.08em',
-                  mb: 2,
-                }}
-              />
-              <Typography variant="h2" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 2 }}>
-                Corporate IT Asset Disposal & Inquiries
-              </Typography>
-              <Typography variant="body1" sx={{ color: '#c8ded0', lineHeight: 1.7, mb: 3 }}>
-                Need bulk hardware decommissioning, enterprise EPR compliance certificates, or customized neighborhood
-                recycling drives? Contact our dedicated sustainability team.
-              </Typography>
-
-              <Stack spacing={2}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#9be324', color: '#07160c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <MapIcon />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Headquarters</Typography>
-                    <Typography variant="caption" sx={{ color: '#9eb5a5' }}>Eco-Corridor, Outer Ring Road, Bengaluru, KA 560103</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#9be324', color: '#07160c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ShieldIcon />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Government Certifications</Typography>
-                    <Typography variant="caption" sx={{ color: '#9eb5a5' }}>CPCB Registration No: B-29016/(E-Waste)/2024</Typography>
-                  </Box>
-                </Box>
-              </Stack>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card sx={{ p: 4, borderRadius: '32px', background: '#08150c', border: '1px solid rgba(155, 227, 36, 0.25)' }}>
-                {contactSubmitted ? (
-                  <Box sx={{ textAlign: 'center', py: 4 }}>
-                    <Box sx={{ width: 60, height: 60, borderRadius: '50%', bgcolor: '#9be324', color: '#07160c', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-                      <CheckIcon sx={{ fontSize: 36 }} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 1 }}>
-                      Inquiry Received!
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#9eb5a5', mb: 3 }}>
-                      Our circular supply chain specialist will contact you within 2 business hours.
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setContactSubmitted(false)}
-                      sx={{ borderRadius: '9999px', borderColor: '#9be324', color: '#9be324' }}
-                    >
-                      Send Another Inquiry
-                    </Button>
-                  </Box>
-                ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setContactSubmitted(true);
-                    }}
-                  >
-                    <Typography variant="h5" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 3 }}>
-                      Request Free Corporate Pickup
-                    </Typography>
-                    <Stack spacing={2.5}>
-                      <TextField
-                        required
-                        fullWidth
-                        size="small"
-                        label="Full Name / Organization"
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '16px',
-                            color: '#fff',
-                            '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
-                            '&:hover fieldset': { borderColor: '#9be324' },
-                          },
-                          '& .MuiInputLabel-root': { color: '#9eb5a5' },
-                        }}
-                      />
-                      <TextField
-                        required
-                        fullWidth
-                        type="email"
-                        size="small"
-                        label="Work Email Address"
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '16px',
-                            color: '#fff',
-                            '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
-                            '&:hover fieldset': { borderColor: '#9be324' },
-                          },
-                          '& .MuiInputLabel-root': { color: '#9eb5a5' },
-                        }}
-                      />
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={3}
-                        label="Estimated Volume & Devices (e.g. 25 Laptops, 5 Servers)"
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '16px',
-                            color: '#fff',
-                            '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
-                            '&:hover fieldset': { borderColor: '#9be324' },
-                          },
-                          '& .MuiInputLabel-root': { color: '#9eb5a5' },
-                        }}
-                      />
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth
-                        className="btn-premium-interactive"
-                        sx={{
-                          bgcolor: '#9be324',
-                          color: '#07160c',
-                          borderRadius: '9999px',
-                          py: 1.4,
-                          fontWeight: 800,
-                          fontSize: '1rem',
-                          '&:hover': { bgcolor: '#a8ee30' },
-                        }}
-                      >
-                        Submit Collection Request <span className="btn-arrow-icon" style={{ display: 'inline-block', marginLeft: 6 }}>↗</span>
-                      </Button>
-                    </Stack>
-                  </form>
-                )}
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Instant Valuation Modal */}
-      <QuoteCalculatorModal open={quoteOpen} onClose={() => setQuoteOpen(false)} />
     </Box>
   );
 };

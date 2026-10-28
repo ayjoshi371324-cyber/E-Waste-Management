@@ -7,8 +7,6 @@ import { Layout } from './components/Layout';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
-import { AboutPage } from './pages/AboutPage';
-import { ServicesPage } from './pages/ServicesPage';
 import { FindCentersPage } from './pages/FindCentersPage';
 import { AIClassifyPage } from './pages/AIClassifyPage';
 import { CatalogGuidePage } from './pages/CatalogGuidePage';
@@ -27,8 +25,8 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<DashboardPage />} />
-              <Route path="about" element={<AboutPage />} />
-              <Route path="services" element={<ServicesPage />} />
+              <Route path="about" element={<Navigate to="/" replace />} />
+              <Route path="services" element={<Navigate to="/" replace />} />
               <Route path="centers" element={<FindCentersPage />} />
               <Route path="ai-classify" element={<AIClassifyPage />} />
               <Route path="guide" element={<CatalogGuidePage />} />

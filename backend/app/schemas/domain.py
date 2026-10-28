@@ -171,3 +171,6 @@ class AIClassifyResponse(BaseModel):
     top_predictions: List[AICandidatePrediction]
     storage_url: str
     disclaimer: str = "Predictions are suggestions, not certified safety assessments. Verify the category prior to submission."
+    is_pdf: bool = False
+    page_count: Optional[int] = None
+    images_detected: Optional[int] = None
