@@ -15,15 +15,21 @@ class PgCentersRepo(CentersRepoBase):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 # PostGIS spatial proximity query using ST_Distance and ST_DWithin
-                params = [lng, lat, lng, lat, radius_meters]
                 filter_clauses = []
+                # Point arguments: distance_meters (lng, lat), distance_km (lng, lat), ST_DWithin (lng, lat), radius_meters
+                full_params = [lng, lat, lng, lat, lng, lat, radius_meters]
 
                 if verified_only:
                     filter_clauses.append("c.current_verification_status = 'verified'")
 
                 if category_id:
-                    filter_clauses.append("cac.category_id = %s")
-                    params.append(category_id)
+                    filter_clauses.append("""
+                        EXISTS (
+                            SELECT 1 FROM center_accepted_categories cac_filter
+                            WHERE cac_filter.center_id = c.center_id AND cac_filter.category_id = %s
+                        )
+                    """)
+                    full_params.append(category_id)
 
                 where_sql = " AND ".join(filter_clauses)
                 if where_sql:
@@ -43,7 +49,7 @@ class PgCentersRepo(CentersRepoBase):
                         ROUND((ST_Distance(c.location::geography, ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography))::numeric, 1) AS distance_meters,
                         ROUND(((ST_Distance(c.location::geography, ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography)) / 1000.0)::numeric, 2) AS distance_km,
                         COALESCE(
-                            ARRAY_AGG(dc.code) FILTER (WHERE dc.code IS NOT NULL),
+                            ARRAY_AGG(DISTINCT dc.code ORDER BY dc.code) FILTER (WHERE dc.code IS NOT NULL),
                             ARRAY[]::VARCHAR[]
                         ) AS accepted_categories
                     FROM recycling_centers c
@@ -54,11 +60,6 @@ class PgCentersRepo(CentersRepoBase):
                     GROUP BY c.center_id, c.name, c.address, c.contact_phone, c.contact_email, c.location, c.operational_hours, c.current_verification_status
                     ORDER BY distance_meters ASC
                 """
-                # Point arguments are placed at the beginning and the within check
-                full_params = [lng, lat, lng, lat, lng, lat, radius_meters]
-                if category_id:
-                    full_params.append(category_id)
-
                 cur.execute(query, tuple(full_params))
                 rows = cur.fetchall()
 
@@ -164,8 +165,8 @@ class PgCentersRepo(CentersRepoBase):
                     """,
                     (
                         name, address, contact_phone, contact_email,
-                        json.dumps(operational_hours) if operational_hours else None,
-                        json.dumps(operational_hours) if operational_hours else None,
+                        json.dumps(operational_hours) if operational_hours is not None else None,
+                        json.dumps(operational_hours) if operational_hours is not None else None,
                         current_verification_status, center_id
                     )
                 )

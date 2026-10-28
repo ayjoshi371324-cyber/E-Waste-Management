@@ -2,6 +2,7 @@ import {
   AIClassifyResponse,
   CategoryMaterial,
   CenterSearchResult,
+  GeocodeResult,
   CommunityDashboard,
   DeviceCategory,
   ImpactSummaryReport,
@@ -83,6 +84,8 @@ export const api = {
     if (categoryId) query += `&category_id=${categoryId}`;
     return request<CenterSearchResult[]>(query);
   },
+  geocodeLocation: (query: string) =>
+    request<GeocodeResult>(`/api/v1/centers/geocode?query=${encodeURIComponent(query)}`),
   getAllCenters: () => request<any[]>('/api/v1/centers'),
   createCenter: (data: any) => request<any>('/api/v1/centers', { method: 'POST', body: JSON.stringify(data) }),
   verifyCenter: (centerId: string, data: { status: string; valid_until?: string; rejection_reason?: string }) =>
