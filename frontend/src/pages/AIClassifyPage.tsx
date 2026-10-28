@@ -137,18 +137,73 @@ export const AIClassifyPage: React.FC = () => {
               {previewUrl ? (
                 <Box>
                   <Box
-                    component="img"
-                    src={previewUrl}
-                    alt="Uploaded Device"
                     sx={{
-                      maxHeight: 260,
+                      position: 'relative',
+                      display: 'inline-block',
                       maxWidth: '100%',
                       borderRadius: 3,
-                      boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
+                      overflow: 'hidden',
+                      boxShadow: loading ? '0 0 30px rgba(155, 227, 36, 0.4)' : '0 8px 20px rgba(0,0,0,0.5)',
+                      transition: 'box-shadow 0.3s ease',
                       mb: 2,
                     }}
-                  />
-                  <Typography variant="body2" sx={{ color: '#34d399', fontWeight: 600 }}>
+                  >
+                    <Box
+                      component="img"
+                      src={previewUrl}
+                      alt="Uploaded Device"
+                      sx={{
+                        maxHeight: 280,
+                        maxWidth: '100%',
+                        display: 'block',
+                        borderRadius: 3,
+                        filter: loading ? 'brightness(0.9) contrast(1.1)' : 'none',
+                        transition: 'filter 0.3s ease',
+                      }}
+                    />
+
+                    {/* Scanning Laser Beam & Matrix Grid Overlay */}
+                    {loading && (
+                      <>
+                        <Box className="laser-scanner-line" />
+                        <Box
+                          className="scanner-active-overlay"
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            pointerEvents: 'none',
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 12,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            bgcolor: 'rgba(7, 18, 10, 0.85)',
+                            border: '1px solid #9be324',
+                            color: '#9be324',
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            letterSpacing: '0.06em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            backdropFilter: 'blur(8px)',
+                            zIndex: 11,
+                          }}
+                        >
+                          <CircularProgress size={12} sx={{ color: '#9be324' }} />
+                          SCANNING CONTOURS...
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+
+                  <Typography variant="body2" sx={{ color: '#9be324', fontWeight: 600 }}>
                     {selectedFile?.name} ({(selectedFile?.size ? selectedFile.size / 1024 : 0).toFixed(1)} KB)
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mt: 0.5 }}>
@@ -157,7 +212,7 @@ export const AIClassifyPage: React.FC = () => {
                 </Box>
               ) : (
                 <Box>
-                  <UploadIcon sx={{ fontSize: 56, color: '#10b981', mb: 1.5 }} />
+                  <UploadIcon sx={{ fontSize: 56, color: '#9be324', mb: 1.5 }} />
                   <Typography variant="h6" sx={{ fontWeight: 700, color: '#f3f4f6', mb: 0.5 }}>
                     Choose Device Photo
                   </Typography>
@@ -174,8 +229,18 @@ export const AIClassifyPage: React.FC = () => {
               size="large"
               disabled={!selectedFile || loading}
               onClick={handleClassify}
+              className="btn-premium-interactive"
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AIIcon />}
-              sx={{ mt: 3, py: 1.5 }}
+              sx={{
+                mt: 3,
+                py: 1.5,
+                bgcolor: '#9be324',
+                color: '#07160c',
+                fontWeight: 800,
+                borderRadius: '9999px',
+                '&:hover': { bgcolor: '#a8ee30' },
+                '&.Mui-disabled': { bgcolor: 'rgba(255, 255, 255, 0.12)', color: 'rgba(255, 255, 255, 0.3)' },
+              }}
             >
               {loading ? 'Running Neural Analysis...' : 'Run AI Classification'}
             </Button>
@@ -185,7 +250,7 @@ export const AIClassifyPage: React.FC = () => {
         {/* Prediction Results Column */}
         <Grid size={{ xs: 12, md: 6 }}>
           {result ? (
-            <Card sx={{ p: 3, height: '100%' }}>
+            <Card className="page-transition-enter" sx={{ p: 3, height: '100%', border: '1px solid rgba(155, 227, 36, 0.3)', borderRadius: '24px' }}>
               <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: '"Outfit", sans-serif', mb: 2 }}>
                 Classification Report
               </Typography>
@@ -203,7 +268,7 @@ export const AIClassifyPage: React.FC = () => {
                   TOP DETECTED CATEGORY
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#34d399', fontFamily: '"Outfit", sans-serif' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#9be324', fontFamily: '"Outfit", sans-serif' }}>
                     {result.predicted_category_code}
                   </Typography>
                   <Chip
@@ -265,17 +330,32 @@ export const AIClassifyPage: React.FC = () => {
                 <Button
                   variant="contained"
                   fullWidth
+                  className="btn-premium-interactive"
                   startIcon={<ConfirmIcon />}
                   onClick={() => navigate(`/submit?category=${confirmedCategory}&photo_id=${result.photo_id}`)}
+                  sx={{
+                    bgcolor: '#9be324',
+                    color: '#07160c',
+                    fontWeight: 700,
+                    borderRadius: '9999px',
+                    '&:hover': { bgcolor: '#a8ee30' },
+                  }}
                 >
                   Submit Evidence
                 </Button>
                 <Button
                   variant="outlined"
                   fullWidth
+                  className="btn-premium-interactive"
                   startIcon={<MapIcon />}
                   onClick={() => navigate('/centers')}
-                  sx={{ color: '#22d3ee', borderColor: 'rgba(6, 182, 212, 0.4)' }}
+                  sx={{
+                    color: '#9be324',
+                    borderColor: 'rgba(155, 227, 36, 0.4)',
+                    fontWeight: 700,
+                    borderRadius: '9999px',
+                    '&:hover': { borderColor: '#9be324', bgcolor: 'rgba(155, 227, 36, 0.08)' },
+                  }}
                 >
                   Find Centers
                 </Button>

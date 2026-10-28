@@ -66,10 +66,11 @@ export const Footer: React.FC = () => {
               Features
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link href="/about" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>About Platform</Link>
+              <Link href="/services" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>Our Services</Link>
               <Link href="/centers" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>Nearby Centers</Link>
               <Link href="/ai-classify" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>AI Scanner</Link>
               <Link href="/guide" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>Recycling Guides</Link>
-              <Link href="/submit" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>Submit Proof</Link>
               <Link href="/rewards" underline="hover" sx={{ color: '#9ca3af', fontSize: '0.875rem' }}>Eco Rewards</Link>
             </Box>
           </Grid>

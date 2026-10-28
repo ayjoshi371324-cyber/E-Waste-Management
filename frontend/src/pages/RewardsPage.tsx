@@ -38,10 +38,12 @@ import {
 } from '@mui/icons-material';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useCountUp } from '../hooks/useCountUp';
 import { LeaderboardEntry, PointsLedgerEntry, Reward, UserBadge } from '../types';
 
 export const RewardsPage: React.FC = () => {
   const { user, balance, refreshUser } = useAuth();
+  const animatedBalance = useCountUp(balance, { duration: 900, decimals: 0 });
   const [tab, setTab] = useState(0); // 0: Catalog, 1: Badges, 2: Ledger, 3: Leaderboard
 
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -172,20 +174,22 @@ export const RewardsPage: React.FC = () => {
               gap: 2,
               px: 3,
               py: 1.5,
-              borderRadius: 3,
-              bgcolor: 'rgba(0, 0, 0, 0.4)',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
+              borderRadius: '24px',
+              bgcolor: 'rgba(7, 18, 10, 0.7)',
+              border: '1px solid rgba(155, 227, 36, 0.4)',
+              boxShadow: '0 0 25px rgba(155, 227, 36, 0.15)',
+              transition: 'box-shadow 0.3s ease',
             }}
           >
-            <Box sx={{ p: 1, borderRadius: '50%', bgcolor: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }}>
+            <Box sx={{ p: 1, borderRadius: '50%', bgcolor: 'rgba(155, 227, 36, 0.2)', color: '#9be324' }}>
               <EcoIcon fontSize="medium" />
             </Box>
             <Box>
-              <Typography variant="caption" sx={{ color: '#9ca3af', fontWeight: 700, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: '#9eb5a5', fontWeight: 700, display: 'block', letterSpacing: '0.06em' }}>
                 AVAILABLE BALANCE
               </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#34d399', fontFamily: '"Outfit", sans-serif' }}>
-                {balance.toLocaleString()} <span style={{ fontSize: '0.9rem', color: '#9ca3af' }}>PTS</span>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#9be324', fontFamily: '"Outfit", sans-serif' }}>
+                {animatedBalance.toLocaleString()} <span style={{ fontSize: '0.85rem', color: '#9eb5a5' }}>PTS</span>
               </Typography>
             </Box>
           </Box>
@@ -207,6 +211,14 @@ export const RewardsPage: React.FC = () => {
               textTransform: 'none',
               px: 3,
             },
+            '& .Mui-selected': {
+              color: '#9be324 !important',
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#9be324',
+              height: 3,
+              borderRadius: '3px 3px 0 0',
+            },
           }}
         >
           <Tab icon={<GiftIcon />} iconPosition="start" label="Rewards Catalog" />
@@ -218,16 +230,29 @@ export const RewardsPage: React.FC = () => {
 
       {/* TAB 0: REWARDS CATALOG */}
       {tab === 0 && (
-        <Grid container spacing={3}>
+        <Grid container spacing={3} className="page-transition-enter">
           {rewards.map((r) => {
             const canAfford = balance >= r.points_cost;
             const inStock = r.stock_quantity > 0;
 
             return (
               <Grid key={r.reward_id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 3 }}>
+                <Card
+                  className="card-interactive"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 3,
+                    borderRadius: '24px',
+                    border: '1px solid rgba(155, 227, 36, 0.18)',
+                  }}
+                >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ p: 1.5, borderRadius: 2.5, bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                    <Box
+                      className="card-icon-zoom"
+                      sx={{ p: 1.5, borderRadius: 2.5, bgcolor: 'rgba(155, 227, 36, 0.1)', color: '#9be324' }}
+                    >
                       <GiftIcon />
                     </Box>
                     <Chip
@@ -248,7 +273,7 @@ export const RewardsPage: React.FC = () => {
                   </Typography>
 
                   <Box sx={{ pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#34d399', fontFamily: '"Outfit", sans-serif' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#9be324', fontFamily: '"Outfit", sans-serif' }}>
                       {r.points_cost} <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>PTS</span>
                     </Typography>
 
@@ -257,11 +282,16 @@ export const RewardsPage: React.FC = () => {
                       size="small"
                       disabled={!inStock || !canAfford || !user}
                       onClick={() => handleOpenRedeem(r)}
+                      className="btn-premium-interactive"
                       sx={{
-                        background: canAfford ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : undefined,
+                        borderRadius: '9999px',
+                        fontWeight: 700,
+                        bgcolor: canAfford ? '#9be324' : undefined,
+                        color: canAfford ? '#07160c' : undefined,
+                        '&:hover': { bgcolor: canAfford ? '#a8ee30' : undefined },
                       }}
                     >
-                      {!user ? 'Sign In' : !canAfford ? 'Need Points' : !inStock ? 'Out of Stock' : 'Redeem'}
+                      {!user ? 'Sign In' : !canAfford ? 'Need Points' : !inStock ? 'Out of Stock' : 'Redeem ↗'}
                     </Button>
                   </Box>
                 </Card>
@@ -413,40 +443,83 @@ export const RewardsPage: React.FC = () => {
         slotProps={{
           paper: {
             sx: {
-              background: '#111827',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              borderRadius: 4,
+              background: '#07120a',
+              border: '1px solid rgba(155, 227, 36, 0.4)',
+              borderRadius: '28px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(155, 227, 36, 0.2)',
             },
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontFamily: '"Outfit", sans-serif' }}>
+        <DialogTitle sx={{ fontWeight: 800, fontFamily: '"Outfit", sans-serif', color: '#f4fbf5', pb: 1 }}>
           Confirm Reward Redemption
         </DialogTitle>
         <DialogContent dividers sx={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
           {redeemResult ? (
-            <Alert severity={redeemResult.success ? 'success' : 'error'} sx={{ borderRadius: 2 }}>
-              {redeemResult.message}
-            </Alert>
+            <Box sx={{ textAlign: 'center', py: 2 }}>
+              {redeemResult.success && (
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(155, 227, 36, 0.15)',
+                    color: '#9be324',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2,
+                    animation: 'heroFadeUp 0.5s ease both',
+                  }}
+                >
+                  <VerifiedIcon sx={{ fontSize: 36 }} />
+                </Box>
+              )}
+              <Alert
+                severity={redeemResult.success ? 'success' : 'error'}
+                sx={{
+                  borderRadius: 3,
+                  bgcolor: redeemResult.success ? 'rgba(155, 227, 36, 0.12)' : undefined,
+                  color: redeemResult.success ? '#f4fbf5' : undefined,
+                  border: redeemResult.success ? '1px solid rgba(155, 227, 36, 0.3)' : undefined,
+                }}
+              >
+                {redeemResult.message}
+              </Alert>
+            </Box>
           ) : (
             <Box>
-              <Typography variant="body1" sx={{ color: '#f3f4f6', mb: 1, fontWeight: 600 }}>
+              <Typography variant="body1" sx={{ color: '#f4fbf5', mb: 1, fontWeight: 700 }}>
                 {selectedReward?.title}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#9ca3af', mb: 2 }}>
+              <Typography variant="body2" sx={{ color: '#9eb5a5', mb: 2, lineHeight: 1.6 }}>
                 {selectedReward?.description}
               </Typography>
-              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'rgba(255, 255, 255, 0.04)', display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" sx={{ color: '#9ca3af' }}>Cost:</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#34d399' }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: '16px',
+                  bgcolor: 'rgba(155, 227, 36, 0.06)',
+                  border: '1px solid rgba(155, 227, 36, 0.2)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="body2" sx={{ color: '#9eb5a5', fontWeight: 600 }}>Points Deduction:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 800, color: '#9be324', fontFamily: '"Outfit", sans-serif' }}>
                   {selectedReward?.points_cost} PTS
                 </Typography>
               </Box>
             </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setRedeemDialogOpen(false)} sx={{ color: '#9ca3af' }}>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button
+            onClick={() => setRedeemDialogOpen(false)}
+            sx={{ color: '#9eb5a5', borderRadius: '9999px', px: 2 }}
+          >
             {redeemResult ? 'Close' : 'Cancel'}
           </Button>
           {!redeemResult && (
@@ -454,9 +527,17 @@ export const RewardsPage: React.FC = () => {
               variant="contained"
               onClick={handleConfirmRedeem}
               disabled={redeeming}
-              sx={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+              className="btn-premium-interactive"
+              sx={{
+                bgcolor: '#9be324',
+                color: '#07160c',
+                fontWeight: 800,
+                borderRadius: '9999px',
+                px: 3,
+                '&:hover': { bgcolor: '#a8ee30' },
+              }}
             >
-              {redeeming ? 'Redeeming...' : 'Confirm'}
+              {redeeming ? 'Redeeming...' : 'Confirm Redemption'}
             </Button>
           )}
         </DialogActions>

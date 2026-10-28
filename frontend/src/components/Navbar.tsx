@@ -6,9 +6,16 @@ import {
   Button,
   Chip,
   Container,
+  Drawer,
   IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -16,41 +23,59 @@ import {
   AdminPanelSettings as AdminIcon,
   AutoAwesome as AIIcon,
   CardGiftcard as GiftIcon,
-  CheckCircle as VerifiedIcon,
-  Recycling as EcoIcon,
   FactCheck as SubmitIcon,
-  Leaderboard as LeaderboardIcon,
+  Info as AboutIcon,
   LocationOn as MapIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon,
   Menu as MenuIcon,
   MenuBook as GuideIcon,
+  NorthEast as ArrowIcon,
+  People as TeamIcon,
   Person as PersonIcon,
+  Phone as ContactIcon,
+  Recycling as EcoIcon,
+  MiscellaneousServices as ServicesIcon,
 } from '@mui/icons-material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { QuoteCalculatorModal } from './QuoteCalculatorModal';
 
 export const Navbar: React.FC = () => {
   const { user, balance, logout, isAdmin, isCenterRep } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-  const [anchorElMobile, setAnchorElMobile] = useState<null | HTMLElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
 
-  const navLinks = [
-    { label: 'Dashboard', path: '/', icon: <EcoIcon fontSize="small" /> },
-    { label: 'Find Centers', path: '/centers', icon: <MapIcon fontSize="small" /> },
-    { label: 'AI Identify', path: '/ai-classify', icon: <AIIcon fontSize="small" /> },
-    { label: 'Catalog & Guide', path: '/guide', icon: <GuideIcon fontSize="small" /> },
-    { label: 'Submit Evidence', path: '/submit', icon: <SubmitIcon fontSize="small" /> },
-    { label: 'Rewards', path: '/rewards', icon: <GiftIcon fontSize="small" /> },
+  const mainNavItems = [
+    { label: 'Home', path: '/', isAnchor: false },
+    { label: 'About Us', path: '/about', isAnchor: false },
+    { label: 'Services', path: '/services', isAnchor: false },
+    { label: 'Find Centers', path: '/centers', isAnchor: false },
+    { label: 'AI Scanner', path: '/ai-classify', isAnchor: false },
+    { label: 'Rewards', path: '/rewards', isAnchor: false },
+    { label: 'Team', path: '/#team', isAnchor: true },
+    { label: 'Contact', path: '/#contact', isAnchor: true },
   ];
 
-  if (isAdmin || isCenterRep) {
-    navLinks.push({
-      label: 'Admin Queue',
-      path: '/admin',
-      icon: <AdminIcon fontSize="small" />,
-    });
-  }
+  const handleNavClick = (item: { label: string; path: string; isAnchor: boolean }) => {
+    if (item.isAnchor) {
+      if (location.pathname !== '/') {
+        navigate(item.path);
+      } else {
+        const anchorId = item.path.replace('/#', '');
+        const elem = document.getElementById(anchorId);
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    } else {
+      navigate(item.path);
+    }
+    setMobileOpen(false);
+  };
 
   const handleLogout = async () => {
     setAnchorElUser(null);
@@ -59,18 +84,35 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <AppBar
-      position="sticky"
-      sx={{
-        backgroundColor: 'rgba(11, 17, 32, 0.85)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ minHeight: 70 }}>
-          {/* Brand Logo */}
+    <>
+      {/* Floating Pill Top Header */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: { xs: 8, md: 16 },
+          zIndex: 1100,
+          px: { xs: 2, sm: 3, md: 4 },
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 1320,
+            bgcolor: '#ffffff',
+            borderRadius: '9999px',
+            boxShadow: '0 12px 35px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.08)',
+            px: { xs: 2, sm: 2.5, md: 3 },
+            py: { xs: 1, md: 1.2 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          {/* Logo matching the reference image */}
           <Box
             component={Link}
             to="/"
@@ -78,229 +120,426 @@ export const Navbar: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               textDecoration: 'none',
-              color: 'inherit',
-              mr: 3,
+              gap: 1.2,
+              '&:hover .logo-svg-container': {
+                transform: 'rotate(12deg) scale(1.06)',
+              },
             }}
           >
             <Box
+              className="logo-svg-container"
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 2.5,
-                background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                width: { xs: 38, md: 44 },
+                height: { xs: 38, md: 44 },
+                borderRadius: '50%',
+                bgcolor: '#0e2616',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mr: 1.5,
-                boxShadow: '0 0 16px rgba(16, 185, 129, 0.4)',
+                position: 'relative',
+                boxShadow: '0 4px 12px rgba(14, 38, 22, 0.25)',
+                transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
-              <EcoIcon sx={{ color: '#fff', fontSize: 24 }} />
+              {/* Custom SVG logo evoking the circular green bin & leaf in screenshot */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M19 7L18.1 19.1C18 20.2 17.1 21 16 21H8C6.9 21 6 20.2 5.9 19.1L5 7"
+                  stroke="#9be324"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path d="M10 11V17" stroke="#9be324" strokeWidth="2" strokeLinecap="round" />
+                <path d="M14 11V17" stroke="#9be324" strokeWidth="2" strokeLinecap="round" />
+                <path d="M3 7H21" stroke="#9be324" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M9 7V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V7"
+                  stroke="#9be324"
+                  strokeWidth="2"
+                />
+              </svg>
             </Box>
             <Box>
               <Typography
                 variant="h6"
-                noWrap
                 sx={{
                   fontFamily: '"Outfit", sans-serif',
                   fontWeight: 800,
-                  letterSpacing: '-0.02em',
-                  background: 'linear-gradient(90deg, #34d399 0%, #22d3ee 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontSize: { xs: '1.05rem', md: '1.25rem' },
+                  color: '#0e2616',
                   lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
                 }}
               >
-                EcoCycle
+                Smart Waste
               </Typography>
-              <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.65rem', letterSpacing: '0.05em' }}>
-                SMART E-WASTE PLATFORM
+              <Typography
+                variant="caption"
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  color: '#2a5937',
+                  fontWeight: 700,
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                E-Waste Recycling
               </Typography>
             </Box>
           </Box>
 
-          {/* Desktop Nav Links */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', lg: 'flex' }, gap: 0.5 }}>
-            {navLinks.map((link) => {
-              const active = location.pathname === link.path;
+          {/* Center Navigation Links with Animated Lime-Green Active Indicator */}
+          <Box
+            sx={{
+              display: { xs: 'none', lg: 'flex' },
+              alignItems: 'center',
+              gap: { lg: 1.2, xl: 2 },
+            }}
+          >
+            {mainNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
               return (
                 <Button
-                  key={link.path}
-                  component={Link}
-                  to={link.path}
-                  startIcon={link.icon}
+                  key={item.label}
+                  onClick={() => handleNavClick(item)}
                   sx={{
-                    color: active ? '#10b981' : '#9ca3af',
-                    backgroundColor: active ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
-                    border: active ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
-                    borderRadius: 2,
+                    color: isActive ? '#0e2616' : '#2b4433',
+                    fontSize: '0.92rem',
+                    fontWeight: isActive ? 800 : 600,
                     px: 1.8,
                     py: 0.8,
-                    fontSize: '0.875rem',
-                    fontWeight: active ? 600 : 500,
+                    borderRadius: '9999px',
+                    position: 'relative',
+                    transition: 'color 0.25s ease, background-color 0.25s ease, transform 0.2s ease',
+                    bgcolor: isActive ? 'rgba(155, 227, 36, 0.22)' : 'transparent',
+                    boxShadow: isActive ? '0 2px 8px rgba(155, 227, 36, 0.3)' : 'none',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 4,
+                      left: '25%',
+                      width: '50%',
+                      height: '2.5px',
+                      borderRadius: '9999px',
+                      bgcolor: '#9be324',
+                      transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                      transformOrigin: 'center',
+                      transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      color: '#f3f4f6',
+                      color: '#0e2616',
+                      bgcolor: isActive ? 'rgba(155, 227, 36, 0.28)' : 'rgba(14, 38, 22, 0.06)',
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'scale(0.97)',
                     },
                   }}
                 >
-                  {link.label}
+                  {item.label}
                 </Button>
               );
             })}
           </Box>
 
-          {/* User Controls & Balance Pill */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Right Action Buttons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {/* User points balance if logged in */}
+            {user && (
+              <Chip
+                component={Link}
+                to="/rewards"
+                icon={<EcoIcon style={{ color: '#0e2616', fontSize: 16 }} />}
+                label={`${balance.toLocaleString()} pts`}
+                sx={{
+                  bgcolor: '#9be324',
+                  color: '#0e2616',
+                  fontWeight: 800,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  transition: 'all 0.25s ease',
+                  '&:hover': {
+                    bgcolor: '#a8ee30',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(155, 227, 36, 0.4)',
+                  },
+                }}
+              />
+            )}
+
+            {/* Profile Avatar / Login */}
             {user ? (
               <>
-                {/* Eco Points Pill */}
-                <Box
-                  component={Link}
-                  to="/rewards"
+                <IconButton
+                  onClick={(e) => setAnchorElUser(e.currentTarget)}
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    textDecoration: 'none',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%)',
-                    border: '1px solid rgba(16, 185, 129, 0.4)',
-                    borderRadius: '24px',
-                    px: 2,
-                    py: 0.6,
-                    cursor: 'pointer',
+                    p: 0.4,
+                    border: '2px solid #0e2616',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-1px)',
-                      borderColor: '#10b981',
-                      boxShadow: '0 0 12px rgba(16, 185, 129, 0.3)',
+                      bgcolor: 'rgba(14, 38, 22, 0.08)',
+                      transform: 'scale(1.05)',
                     },
                   }}
                 >
-                  <EcoIcon sx={{ color: '#10b981', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#34d399' }}>
-                    {balance.toLocaleString()}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#9ca3af', fontWeight: 600 }}>
-                    PTS
-                  </Typography>
-                </Box>
-
-                {/* Role Chip */}
-                <Chip
-                  label={isAdmin ? 'Admin' : isCenterRep ? 'Center Rep' : 'Citizen'}
-                  size="small"
-                  color={isAdmin ? 'error' : isCenterRep ? 'info' : 'success'}
-                  variant="outlined"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' }, fontWeight: 600 }}
-                />
-
-                {/* User Avatar Menu */}
-                <IconButton onClick={(e) => setAnchorElUser(e.currentTarget)} sx={{ p: 0.5 }}>
                   <Avatar
                     sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: 'primary.dark',
-                      border: '2px solid rgba(16, 185, 129, 0.4)',
+                      width: 32,
+                      height: 32,
+                      bgcolor: '#0e2616',
+                      color: '#9be324',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
                     }}
                   >
-                    {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
+                    {user.full_name?.[0]?.toUpperCase() || 'U'}
                   </Avatar>
                 </IconButton>
                 <Menu
-                  sx={{ mt: '45px' }}
                   anchorEl={anchorElUser}
-                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  keepMounted
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   open={Boolean(anchorElUser)}
                   onClose={() => setAnchorElUser(null)}
                   slotProps={{
                     paper: {
                       sx: {
-                        background: '#111827',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: 3,
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                        mt: 1.5,
+                        borderRadius: '20px',
+                        background: '#0e1f14',
+                        border: '1px solid rgba(155, 227, 36, 0.2)',
+                        color: '#fff',
                         minWidth: 200,
+                        boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
                       },
                     },
                   }}
                 >
-                  <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f3f4f6' }}>
+                  <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#f4fbf5' }}>
                       {user.full_name}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#9ca3af' }}>
+                    <Typography variant="caption" sx={{ color: '#9eb5a5' }}>
                       {user.email}
                     </Typography>
                   </Box>
-                  <MenuItem onClick={() => { setAnchorElUser(null); navigate('/submit'); }}>
-                    My Submissions
+                  <MenuItem component={Link} to="/rewards" onClick={() => setAnchorElUser(null)}>
+                    <ListItemIcon><GiftIcon fontSize="small" sx={{ color: '#9be324' }} /></ListItemIcon>
+                    My Rewards & Points
                   </MenuItem>
-                  <MenuItem onClick={() => { setAnchorElUser(null); navigate('/rewards'); }}>
-                    Rewards & Badges
+                  <MenuItem component={Link} to="/submit" onClick={() => setAnchorElUser(null)}>
+                    <ListItemIcon><SubmitIcon fontSize="small" sx={{ color: '#9be324' }} /></ListItemIcon>
+                    Submit Drop-off
                   </MenuItem>
-                  {isAdmin && (
-                    <MenuItem onClick={() => { setAnchorElUser(null); navigate('/admin'); }}>
-                      Admin Review Queue
+                  {(isAdmin || isCenterRep) && (
+                    <MenuItem component={Link} to="/admin" onClick={() => setAnchorElUser(null)}>
+                      <ListItemIcon><AdminIcon fontSize="small" sx={{ color: '#f59e0b' }} /></ListItemIcon>
+                      Admin Queue
                     </MenuItem>
                   )}
                   <MenuItem onClick={handleLogout} sx={{ color: '#ef4444' }}>
+                    <ListItemIcon><LogoutIcon fontSize="small" sx={{ color: '#ef4444' }} /></ListItemIcon>
                     Logout
                   </MenuItem>
                 </Menu>
               </>
             ) : (
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <Button component={Link} to="/login" variant="outlined" color="primary">
-                  Sign In
-                </Button>
-                <Button component={Link} to="/register" variant="contained" color="primary">
-                  Register
-                </Button>
-              </Box>
+              <Button
+                component={Link}
+                to="/login"
+                sx={{
+                  display: { xs: 'none', sm: 'inline-flex' },
+                  color: '#0e2616',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  px: 1.8,
+                  borderRadius: '9999px',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(14,38,22,0.08)',
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                Sign In
+              </Button>
             )}
 
-            {/* Mobile Hamburger Menu */}
+            {/* Signature Dark Green Circular Button with Diagonal Arrow Movement on Hover */}
             <IconButton
-              sx={{ display: { xs: 'flex', lg: 'none' }, color: '#9ca3af' }}
-              onClick={(e) => setAnchorElMobile(e.currentTarget)}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorElMobile}
-              open={Boolean(anchorElMobile)}
-              onClose={() => setAnchorElMobile(null)}
-              slotProps={{
-                paper: {
-                  sx: {
-                    background: '#111827',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 3,
-                    width: 220,
-                  },
+              onClick={() => setQuoteOpen(true)}
+              title="Get Instant Quote & Valuation"
+              sx={{
+                width: { xs: 40, md: 46 },
+                height: { xs: 40, md: 46 },
+                bgcolor: '#0e2616',
+                color: '#9be324',
+                transition: 'all 0.28s cubic-bezier(0.2, 0, 0, 1)',
+                boxShadow: '0 4px 14px rgba(14, 38, 22, 0.35)',
+                '&:hover': {
+                  bgcolor: '#163821',
+                  color: '#ffffff',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 6px 20px rgba(155, 227, 36, 0.45)',
+                },
+                '&:active': {
+                  transform: 'scale(0.96)',
+                },
+                '&:hover .nav-arrow-icon': {
+                  transform: 'translate(3px, -3px)',
                 },
               }}
             >
-              {navLinks.map((link) => (
-                <MenuItem
-                  key={link.path}
-                  onClick={() => {
-                    setAnchorElMobile(null);
-                    navigate(link.path);
-                  }}
-                >
-                  <Box sx={{ mr: 1.5, display: 'flex', alignItems: 'center' }}>{link.icon}</Box>
-                  {link.label}
-                </MenuItem>
-              ))}
-            </Menu>
+              <ArrowIcon
+                className="nav-arrow-icon"
+                sx={{
+                  fontSize: { xs: 20, md: 24 },
+                  transition: 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
+                }}
+              />
+            </IconButton>
+
+            {/* Mobile Hamburger Menu */}
+            <IconButton
+              onClick={() => setMobileOpen(true)}
+              sx={{
+                display: { xs: 'flex', lg: 'none' },
+                color: '#0e2616',
+                bgcolor: 'rgba(14, 38, 22, 0.06)',
+                p: 1,
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
           </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+        </Box>
+      </Box>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 290,
+              bgcolor: '#07120a',
+              color: '#f4fbf5',
+              p: 3,
+              borderLeft: '1px solid rgba(155, 227, 36, 0.2)',
+            },
+          },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              bgcolor: '#9be324',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#07160c',
+            }}
+          >
+            <EcoIcon />
+          </Box>
+          <Typography variant="h6" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800 }}>
+            Smart Waste
+          </Typography>
+        </Box>
+
+        <List sx={{ pt: 0 }}>
+          {mainNavItems.map((item) => (
+            <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => handleNavClick(item)}
+                sx={{
+                  borderRadius: 3,
+                  bgcolor: location.pathname === item.path ? 'rgba(155,227,36,0.15)' : 'transparent',
+                  color: location.pathname === item.path ? '#9be324' : '#c8ded0',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' },
+                }}
+              >
+                <ListItemText primary={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.label}</Typography>} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+          <ListItem disablePadding sx={{ mt: 1 }}>
+            <ListItemButton
+              component={Link}
+              to="/submit"
+              onClick={() => setMobileOpen(false)}
+              sx={{ borderRadius: 3, color: '#c8ded0' }}
+            >
+              <ListItemText primary={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Submit Evidence</Typography>} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton
+              component={Link}
+              to="/guide"
+              onClick={() => setMobileOpen(false)}
+              sx={{ borderRadius: 3, color: '#c8ded0' }}
+            >
+              <ListItemText primary={<Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Catalog & Safety Guide</Typography>} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+
+        <Box sx={{ mt: 'auto', pt: 2 }}>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => {
+              setMobileOpen(false);
+              setQuoteOpen(true);
+            }}
+            sx={{
+              bgcolor: '#9be324',
+              color: '#07160c',
+              borderRadius: '9999px',
+              fontWeight: 800,
+              py: 1.2,
+              mb: 1.5,
+            }}
+          >
+            Get Free Quote ↗
+          </Button>
+          {!user ? (
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              sx={{
+                borderColor: 'rgba(255,255,255,0.2)',
+                color: '#fff',
+                borderRadius: '9999px',
+                py: 1,
+              }}
+            >
+              Sign In
+            </Button>
+          ) : (
+            <Button
+              variant="text"
+              fullWidth
+              onClick={handleLogout}
+              sx={{ color: '#ef4444', py: 1 }}
+            >
+              Logout
+            </Button>
+          )}
+        </Box>
+      </Drawer>
+
+      {/* Quote Calculator Dialog */}
+      <QuoteCalculatorModal open={quoteOpen} onClose={() => setQuoteOpen(false)} />
+    </>
   );
 };
