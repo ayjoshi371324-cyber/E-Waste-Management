@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 >>> DB-INTEGRATION-POINT: Database Connectivity & Smoke Test
-Run this script to verify PostgreSQL (PostGIS) and MongoDB configurations, tables,
-stored functions, and indexes before switching DB_MODE=postgres and MONGO_MODE=mongo.
+Run this script to verify PostgreSQL (PostGIS) configurations, tables,
+stored functions, and indexes according to DB_MODE in .env.
 """
 
 import os
@@ -17,7 +17,11 @@ from app.config import get_settings
 
 
 def check_postgres(settings):
-    print("\n[1/2] Checking PostgreSQL & PostGIS...")
+    if settings.DB_MODE != "postgres":
+        print("\nPostgreSQL: DB_MODE is set to 'mock'. Skipping live PostgreSQL check.")
+        return True
+
+    print("\nChecking PostgreSQL & PostGIS...")
     try:
         import psycopg
         print(f"Connecting to: {settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB} as {settings.POSTGRES_USER}...")
@@ -41,12 +45,13 @@ def check_postgres(settings):
             pg_ver = cur.fetchone()[0]
             print(f"  [PASS] PostGIS detected: {pg_ver}")
 
-            # 2. Key Tables Check
+            # 2. Key Tables Check (17 core relational tables + 4 document/metadata tables)
             required_tables = [
                 "roles", "users", "sessions", "device_categories", "materials",
                 "recycling_centers", "center_accepted_categories", "center_verifications",
                 "center_status_history", "recycling_records", "record_status_history",
-                "receipts", "points_ledger", "rewards", "redemptions", "badges", "user_badges"
+                "receipts", "points_ledger", "rewards", "redemptions", "badges", "user_badges",
+                "device_photo_metadata", "ai_analysis_reports", "center_document_metadata", "activity_events"
             ]
             cur.execute("""
                 SELECT table_name
@@ -58,7 +63,7 @@ def check_postgres(settings):
             if missing_tables:
                 print(f"  [FAIL] Missing tables: {missing_tables}")
                 return False
-            print(f"  [PASS] All {len(required_tables)} core schema tables verified.")
+            print(f"  [PASS] All {len(required_tables)} PostgreSQL tables verified (core + metadata/JSONB tables).")
 
             # 3. Stored Functions Check
             functions = ["approve_and_award_recycling_record", "redeem_reward_transaction"]
@@ -79,45 +84,24 @@ def check_postgres(settings):
         return False
 
 
-def check_mongodb(settings):
-    print("\n[2/2] Checking MongoDB...")
-    try:
-        from pymongo import MongoClient
-        mongo_db_name = getattr(settings, 'MONGO_DB_NAME', getattr(settings, 'MONGO_DB', 'ewaste_meta'))
-        print(f"Connecting to MongoDB at: {settings.MONGO_URI} (db: {mongo_db_name})...")
-        client = MongoClient(settings.MONGO_URI, serverSelectionTimeoutMS=3000)
-        client.admin.command('ping')
-        db = client[mongo_db_name]
-        collections = db.list_collection_names()
-        print(f"  [PASS] MongoDB connection alive. Existing collections: {collections}")
-        client.close()
-        return True
-    except Exception as e:
-        print(f"  [FAIL] MongoDB connection error: {e}")
-        return False
-
-
 def main():
     settings = get_settings()
     print("=" * 60)
     print("Smart E-Waste Recycling Platform — Database Smoke Test")
     print("=" * 60)
-    print(f"Active DB_MODE:    {settings.DB_MODE}")
-    print(f"Active MONGO_MODE: {settings.MONGO_MODE}")
+    print(f"Active DB_MODE: {settings.DB_MODE}")
 
     pg_ok = check_postgres(settings)
-    mongo_ok = check_mongodb(settings)
 
     print("\n" + "=" * 60)
-    if pg_ok and mongo_ok:
-        print("ALL DATABASE CHECKS PASSED!")
-        print("You are ready to switch .env to:")
-        print("  DB_MODE=postgres")
-        print("  MONGO_MODE=mongo")
+    if pg_ok:
+        print("DATABASE CHECKS PASSED FOR CONFIGURED MODE!")
+        print(f"  DB_MODE: {settings.DB_MODE}")
     else:
-        print("SOME DATABASE CHECKS FAILED.")
-        print("Make sure PostgreSQL and MongoDB services are started,")
-        print("and run db/run_all.sql in PostgreSQL.")
+        print("DATABASE CHECKS FAILED.")
+        print("- Verify PostgreSQL service is running.")
+        print("- Check your PostgreSQL password in .env.")
+        print("- Verify db/run_all.sql (including 010_pg_only_tables.sql) was executed.")
     print("=" * 60)
 
 

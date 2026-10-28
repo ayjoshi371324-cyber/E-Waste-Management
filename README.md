@@ -10,13 +10,13 @@ A modular web application designed to optimize electronic waste recycling, rewar
 ├── .gitignore
 ├── .env.example
 ├── README.md
-├── ewaste_recycling_phased_plan.md        # Master 10-phase implementation roadmap
+├── ewaste_recycling_phased_plan.md        # Master implementation roadmap
 ├── e_waste_recycling_minimal_tech_stack.md # Technology stack specifications & constraints
 ├── docs/                                  # Phase 0 Design & Contracts
 │   ├── ER_DIAGRAM.md                      # Normalized 3NF entity model & Mermaid diagram
-│   ├── SCHEMA_DESIGN.md                   # PostgreSQL & MongoDB schema reference
+│   ├── SCHEMA_DESIGN.md                   # PostgreSQL (PostGIS & JSONB) schema reference
 │   └── API_CONTRACT.md                    # REST API endpoint specifications
-├── db/                                    # Phase 1 Database Layer
+├── db/                                    # Database Layer
 │   ├── run_all.sql                        # Master sequential database build script
 │   └── sql/
 │       ├── 001_extensions.sql             # PostGIS, pgcrypto
@@ -27,15 +27,16 @@ A modular web application designed to optimize electronic waste recycling, rewar
 │       ├── 006_audit_triggers.sql         # Automated audit trail logging
 │       ├── 007_functions.sql              # Transactional stored functions
 │       ├── 008_seed.sql                   # Seed data (Bengaluru centers, categories, admin)
-│       └── 009_verification_tests.sql     # Phase 1 Gate Verification test suite
-├── backend/                               # Phase 2 FastAPI backend (Psycopg 3, raw SQL)
-├── frontend/                              # Phase 2 React + TypeScript + Vite + MUI
-└── uploads/                               # Phase 4 local file uploads directory
+│       ├── 009_verification_tests.sql     # Verification test suite
+│       └── 010_pg_only_tables.sql         # Photo metadata, AI reports, center docs, activity events (JSONB)
+├── backend/                               # FastAPI backend (Psycopg 3, raw parameterized SQL)
+├── frontend/                              # React + TypeScript + Vite + MUI
+└── uploads/                               # Local file uploads directory
 ```
 
 ---
 
-## 🚀 Phase 1 Database Setup (Manual Build)
+## 🚀 Database Setup (Manual Build)
 
 ### 1. Requirements
 - PostgreSQL 14+ with PostGIS extension installed.
@@ -62,14 +63,15 @@ psql -U postgres -d ewaste_db -f db/sql/006_audit_triggers.sql
 psql -U postgres -d ewaste_db -f db/sql/007_functions.sql
 psql -U postgres -d ewaste_db -f db/sql/008_seed.sql
 psql -U postgres -d ewaste_db -f db/sql/009_verification_tests.sql
+psql -U postgres -d ewaste_db -f db/sql/010_pg_only_tables.sql
 ```
 
 ---
 
-## 🚦 Phase 1 Gate Checkpoints
-Before proceeding to Phase 2 (FastAPI backend integration):
+## 🚦 Gate Checkpoints
 - [x] PostGIS spatial proximity query executed and verified with category filters.
 - [x] Duplicate receipt rejection verified via UNIQUE constraint.
 - [x] `approve_and_award_recycling_record` function run twice verified to produce exactly one points award.
 - [x] Audit rows generated for center and record status transitions.
 - [x] Reward redemption transaction verified with stock decrement and balance checks.
+- [x] PostgreSQL-only document and metadata tables operational with JSONB for flexible payloads.

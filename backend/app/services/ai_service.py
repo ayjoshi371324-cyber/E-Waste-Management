@@ -29,7 +29,7 @@ class AIService:
         if len(file_bytes) > self.settings.MAX_UPLOAD_SIZE_BYTES:
             raise ValueError(f"File size exceeds maximum permitted limit ({self.settings.MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)} MB).")
 
-        # Save to local uploads directory with UUID
+        # Save to local uploads directory with UUID filename
         ext = os.path.splitext(original_filename)[1].lower() or ".jpg"
         photo_id = uuid4()
         stored_filename = f"{photo_id}{ext}"
@@ -40,7 +40,7 @@ class AIService:
         with open(file_path, "wb") as f:
             f.write(file_bytes)
 
-        # Save metadata in MongoDB (or mock)
+        # Persist photo metadata to PostgreSQL device_photo_metadata table
         photo_meta = DevicePhotoMeta(
             photo_id=photo_id,
             original_filename=original_filename,
@@ -54,7 +54,7 @@ class AIService:
         # Run AI classification
         best_code, confidence, is_low_conf, top_k = classify_image(file_path, hint_filename=original_filename)
 
-        # Save AI analysis report in MongoDB (or mock)
+        # Persist AI analysis report to PostgreSQL ai_analysis_reports table (top_k stored as JSONB)
         report_id = uuid4()
         report = AIAnalysisReport(
             report_id=report_id,

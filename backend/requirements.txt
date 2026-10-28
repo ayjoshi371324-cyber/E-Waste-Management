@@ -6,12 +6,8 @@ python-multipart>=0.0.9
 bcrypt>=4.1.0
 psycopg[binary]>=3.1.18
 psycopg-pool>=3.2.0
-pymongo>=4.6.2
 python-dotenv>=1.0.1
 pytest>=8.0.0
 pytest-asyncio>=0.23.5
 httpx>=0.27.0
 email-validator>=2.0.0
-
-pymongo
-python-dotenv

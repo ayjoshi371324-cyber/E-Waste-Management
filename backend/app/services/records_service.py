@@ -18,7 +18,7 @@ class RecordsService:
         estimated_units: int = 1,
         receipt_number: Optional[str] = None,
         notes: Optional[str] = None,
-        mongo_photo_id: Optional[UUID] = None,
+        photo_id: Optional[UUID] = None,
     ) -> RecyclingRecord:
         # Check duplicate receipt reference if provided
         if receipt_number:
@@ -34,7 +34,7 @@ class RecordsService:
             weight_kg=weight_kg,
             estimated_units=estimated_units,
             notes=notes,
-            mongo_photo_id=mongo_photo_id,
+            photo_id=photo_id,
             receipt_reference=receipt_number.strip() if receipt_number else None,
         )
         return record

@@ -319,7 +319,7 @@ class MockRecordsRepo(RecordsRepoBase):
     def __init__(self):
         self.store = get_mock_store()
 
-    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], mongo_photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord:
+    async def create_record(self, user_id: UUID, center_id: UUID, category_id: UUID, weight_kg: float, estimated_units: int, notes: Optional[str], photo_id: Optional[UUID] = None, receipt_reference: Optional[str] = None) -> RecyclingRecord:
         if receipt_reference and receipt_reference.strip() in self.store.receipt_references:
             raise ValueError(f"Duplicate receipt error: Receipt '{receipt_reference}' has already been registered.")
 
@@ -337,7 +337,7 @@ class MockRecordsRepo(RecordsRepoBase):
             estimated_units=estimated_units,
             status="pending",
             notes=notes,
-            mongo_photo_id=mongo_photo_id,
+            photo_id=photo_id,
             receipt_reference=clean_ref,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),

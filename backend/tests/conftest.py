@@ -1,7 +1,11 @@
+import os
 import sys
 from pathlib import Path
 import pytest
 from httpx import ASGITransport, AsyncClient
+
+# Set DB_MODE to mock for unit tests before importing app
+os.environ["DB_MODE"] = "mock"
 
 # Add backend directory to sys.path
 backend_path = Path(__file__).resolve().parent.parent

@@ -3,10 +3,10 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
+
 class Settings(BaseSettings):
     # Operating Modes
     DB_MODE: str = "mock"  # "mock" | "postgres"
-    MONGO_MODE: str = "mock"  # "mock" | "mongo"
     AI_MODE: str = "stub"  # "stub" | "model"
     AI_MODEL_PATH: str = ""
 
@@ -30,11 +30,6 @@ class Settings(BaseSettings):
     POSTGRES_POOL_MIN_SIZE: int = 2
     POSTGRES_POOL_MAX_SIZE: int = 10
 
-    # MongoDB (Used when MONGO_MODE=mongo)
-    MONGO_URI: str = "mongodb://localhost:27017"
-    MONGO_DB_NAME: str = "ewaste_meta"
-    MONGO_DB: str = "ewaste_meta"
-
     # Uploads
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_BYTES: int = 10485760  # 10 MB
@@ -45,10 +40,10 @@ class Settings(BaseSettings):
     AI_DEVICE: str = "cpu"
 
     model_config = SettingsConfigDict(
-    env_file=Path(__file__).resolve().parents[2] / ".env",
-    env_file_encoding="utf-8",
-    extra="ignore"
-)
+        env_file=Path(__file__).resolve().parents[2] / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
     @property
     def cors_origin_list(self) -> List[str]:

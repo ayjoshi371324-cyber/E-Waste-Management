@@ -25,7 +25,7 @@ async def submit_record(
             estimated_units=req.estimated_units,
             receipt_number=req.receipt_number,
             notes=req.notes,
-            mongo_photo_id=req.photo_id,
+            photo_id=req.photo_id,
         )
         return RecordResponse(
             record_id=rec.record_id,
