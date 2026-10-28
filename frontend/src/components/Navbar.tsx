@@ -39,7 +39,6 @@ import {
 } from '@mui/icons-material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { QuoteCalculatorModal } from './QuoteCalculatorModal';
 
 export const Navbar: React.FC = () => {
   const { user, balance, logout, isAdmin, isCenterRep } = useAuth();
@@ -47,17 +46,12 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [quoteOpen, setQuoteOpen] = useState(false);
 
   const mainNavItems = [
     { label: 'Home', path: '/', isAnchor: false },
-    { label: 'About Us', path: '/about', isAnchor: false },
-    { label: 'Services', path: '/services', isAnchor: false },
     { label: 'Find Centers', path: '/centers', isAnchor: false },
     { label: 'AI Scanner', path: '/ai-classify', isAnchor: false },
     { label: 'Rewards', path: '/rewards', isAnchor: false },
-    { label: 'Team', path: '/#team', isAnchor: true },
-    { label: 'Contact', path: '/#contact', isAnchor: true },
   ];
 
   const handleNavClick = (item: { label: string; path: string; isAnchor: boolean }) => {
@@ -365,40 +359,6 @@ export const Navbar: React.FC = () => {
               </Button>
             )}
 
-            {/* Signature Dark Green Circular Button with Diagonal Arrow Movement on Hover */}
-            <IconButton
-              onClick={() => setQuoteOpen(true)}
-              title="Get Instant Quote & Valuation"
-              sx={{
-                width: { xs: 40, md: 46 },
-                height: { xs: 40, md: 46 },
-                bgcolor: '#0e2616',
-                color: '#9be324',
-                transition: 'all 0.28s cubic-bezier(0.2, 0, 0, 1)',
-                boxShadow: '0 4px 14px rgba(14, 38, 22, 0.35)',
-                '&:hover': {
-                  bgcolor: '#163821',
-                  color: '#ffffff',
-                  transform: 'scale(1.05)',
-                  boxShadow: '0 6px 20px rgba(155, 227, 36, 0.45)',
-                },
-                '&:active': {
-                  transform: 'scale(0.96)',
-                },
-                '&:hover .nav-arrow-icon': {
-                  transform: 'translate(3px, -3px)',
-                },
-              }}
-            >
-              <ArrowIcon
-                className="nav-arrow-icon"
-                sx={{
-                  fontSize: { xs: 20, md: 24 },
-                  transition: 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
-                }}
-              />
-            </IconButton>
-
             {/* Mobile Hamburger Menu */}
             <IconButton
               onClick={() => setMobileOpen(true)}
@@ -494,10 +454,9 @@ export const Navbar: React.FC = () => {
           <Button
             variant="contained"
             fullWidth
-            onClick={() => {
-              setMobileOpen(false);
-              setQuoteOpen(true);
-            }}
+            component={Link}
+            to="/ai-classify"
+            onClick={() => setMobileOpen(false)}
             sx={{
               bgcolor: '#9be324',
               color: '#07160c',
@@ -507,7 +466,7 @@ export const Navbar: React.FC = () => {
               mb: 1.5,
             }}
           >
-            Get Free Quote ↗
+            AI Device Scanner ↗
           </Button>
           {!user ? (
             <Button
@@ -537,9 +496,6 @@ export const Navbar: React.FC = () => {
           )}
         </Box>
       </Drawer>
-
-      {/* Quote Calculator Dialog */}
-      <QuoteCalculatorModal open={quoteOpen} onClose={() => setQuoteOpen(false)} />
     </>
   );
 };

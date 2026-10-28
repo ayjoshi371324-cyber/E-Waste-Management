@@ -29,7 +29,6 @@ export const AboutPage: React.FC = () => {
   const missionReveal = useScrollReveal({ threshold: 0.1 });
   const pillarsReveal = useScrollReveal({ threshold: 0.1 });
   const standardsReveal = useScrollReveal({ threshold: 0.1 });
-  const teamReveal = useScrollReveal({ threshold: 0.1 });
 
   return (
     <Box sx={{ color: '#f4fbf5', py: { xs: 4, md: 8 } }}>
@@ -347,85 +346,67 @@ export const AboutPage: React.FC = () => {
           </Grid>
         </Box>
 
-        {/* Leadership & Engineering Team */}
-        <Box ref={teamReveal.ref} sx={{ mb: 6 }}>
-          <Box sx={{ textAlign: 'center', maxWidth: 700, mx: 'auto', mb: 6 }}>
-            <Chip
-              label="OUR LEADERSHIP"
-              sx={{ bgcolor: 'rgba(155, 227, 36, 0.15)', color: '#9be324', fontWeight: 800, fontSize: '0.75rem', mb: 1.5 }}
-            />
-            <Typography variant="h2" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, fontSize: { xs: '2rem', md: '2.8rem' } }}>
-              Cross-Disciplinary Experts
+        {/* Mission CTA Banner */}
+        <Box
+          sx={{
+            mb: 6,
+            p: { xs: 4, md: 6 },
+            borderRadius: '28px',
+            background: 'linear-gradient(135deg, rgba(14, 31, 20, 0.9) 0%, rgba(20, 48, 30, 0.7) 100%)',
+            border: '1px solid rgba(155, 227, 36, 0.25)',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Box sx={{ maxWidth: 700, mx: 'auto', position: 'relative', zIndex: 1 }}>
+            <Typography variant="h3" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, mb: 2 }}>
+              Ready to Join the Zero E-Waste Mission?
             </Typography>
-            <Typography variant="body1" sx={{ color: '#9eb5a5', mt: 1 }}>
-              Guided by circular economy researchers, distributed systems architects, and certified waste auditors.
+            <Typography variant="body1" sx={{ color: '#9eb5a5', mb: 4, lineHeight: 1.7 }}>
+              Dispose of obsolete electronics responsibly. Earn verified eco-credits, safeguard data security, and track your environmental contribution in real time.
             </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                component={Link}
+                to="/ai-classify"
+                variant="contained"
+                size="large"
+                className="btn-premium-interactive"
+                endIcon={<ArrowIcon />}
+                sx={{
+                  bgcolor: '#9be324',
+                  color: '#07160c',
+                  fontWeight: 800,
+                  borderRadius: '9999px',
+                  px: 4,
+                  py: 1.5,
+                  '&:hover': { bgcolor: '#a8ee30' },
+                }}
+              >
+                Scan Obsolete Device
+              </Button>
+              <Button
+                component={Link}
+                to="/centers"
+                variant="outlined"
+                size="large"
+                className="btn-premium-interactive"
+                startIcon={<MapIcon />}
+                sx={{
+                  color: '#9be324',
+                  borderColor: 'rgba(155, 227, 36, 0.4)',
+                  fontWeight: 700,
+                  borderRadius: '9999px',
+                  px: 3.5,
+                  py: 1.5,
+                  '&:hover': { borderColor: '#9be324', bgcolor: 'rgba(155, 227, 36, 0.08)' },
+                }}
+              >
+                Find Drop-off Centers
+              </Button>
+            </Stack>
           </Box>
-
-          <Grid container spacing={3} className={`scroll-reveal ${teamReveal.isRevealed ? 'revealed' : ''}`}>
-            {[
-              {
-                name: 'Dr. Aris Thorne',
-                role: 'Head of Circular Supply Chains',
-                cred: 'PhD Environmental Engineering, ex-UNEP E-Waste Working Group',
-              },
-              {
-                name: 'Maya Lin',
-                role: 'Lead AI & Computer Vision',
-                cred: 'Computer Vision Researcher, specializing in Edge MobileNetV3 and defect triage',
-              },
-              {
-                name: 'Vikram Seth',
-                role: 'Director of Facility Auditing',
-                cred: 'Lead CPCB ISO 14001 Environmental Auditor with 15+ years industrial recycling oversight',
-              },
-              {
-                name: 'Elena Rostova',
-                role: 'Distributed Systems & Ledger Architect',
-                cred: 'Fintech distributed systems expert designing cryptographic double-entry integrity models',
-              },
-            ].map((member, idx) => (
-              <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={idx} className={`stagger-${idx + 1}`}>
-                <Card
-                  className="card-interactive"
-                  sx={{
-                    p: 3.5,
-                    borderRadius: '24px',
-                    bgcolor: 'rgba(14, 31, 20, 0.55)',
-                    border: '1px solid rgba(155, 227, 36, 0.18)',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: '50%',
-                      bgcolor: 'rgba(155, 227, 36, 0.15)',
-                      border: '2px solid #9be324',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#9be324',
-                      mx: 'auto',
-                      mb: 2,
-                    }}
-                  >
-                    <TeamIcon sx={{ fontSize: 36 }} />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontFamily: '"Outfit", sans-serif', fontWeight: 800, color: '#f4fbf5', mb: 0.5 }}>
-                    {member.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#9be324', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', mb: 1.5 }}>
-                    {member.role}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#9eb5a5', fontSize: '0.82rem', lineHeight: 1.5 }}>
-                    {member.cred}
-                  </Typography>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
         </Box>
       </Container>
     </Box>
