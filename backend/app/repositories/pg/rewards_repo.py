@@ -25,6 +25,51 @@ class PgRewardsRepo(RewardsRepoBase):
                 rows = cur.fetchall()
                 return [Reward(**r) for r in rows]
 
+    async def list_all_rewards(self) -> List[Reward]:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT reward_id, title, description, points_cost, stock_quantity, is_active, created_at, updated_at
+                    FROM rewards
+                    ORDER BY points_cost ASC
+                    """
+                )
+                rows = cur.fetchall()
+                return [Reward(**r) for r in rows]
+
+    async def delete_reward(self, reward_id: UUID) -> bool:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM rewards WHERE reward_id = %s", (reward_id,))
+                return cur.rowcount > 0
+
+    async def get_admin_overview(self) -> Dict[str, Any]:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COALESCE(SUM(points), 0) AS total_awarded FROM points_ledger WHERE points > 0")
+                total_awarded = cur.fetchone()["total_awarded"]
+
+                cur.execute("SELECT COALESCE(ABS(SUM(points)), 0) AS total_redeemed FROM points_ledger WHERE points < 0")
+                total_redeemed = cur.fetchone()["total_redeemed"]
+
+                cur.execute("SELECT COUNT(*) AS total_redemptions FROM redemptions")
+                total_redemptions = cur.fetchone()["total_redemptions"]
+
+                cur.execute("SELECT COUNT(*) AS active_rewards FROM rewards WHERE is_active = TRUE")
+                active_rewards = cur.fetchone()["active_rewards"]
+
+                cur.execute("SELECT COUNT(*) AS pending_records FROM recycling_records WHERE status = 'pending'")
+                pending_records = cur.fetchone()["pending_records"]
+
+                return {
+                    "total_points_awarded": int(total_awarded),
+                    "total_points_redeemed": int(total_redeemed),
+                    "total_redemptions_count": int(total_redemptions),
+                    "active_rewards_count": int(active_rewards),
+                    "pending_records_count": int(pending_records),
+                }
+
     async def get_by_id(self, reward_id: UUID) -> Optional[Reward]:
         with get_db_connection() as conn:
             with conn.cursor() as cur:

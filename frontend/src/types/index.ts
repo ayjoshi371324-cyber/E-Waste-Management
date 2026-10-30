@@ -87,6 +87,7 @@ export interface RecyclingRecord {
   estimated_units: number;
   status: 'pending' | 'approved' | 'rejected';
   notes?: string;
+  photo_id?: string;
   receipt_reference?: string;
   created_at: string;
   category_name?: string;
@@ -123,6 +124,36 @@ export interface RedemptionResponse {
   status: string;
   idempotent_replay: boolean;
   message: string;
+}
+
+export interface Redemption {
+  redemption_id: string;
+  user_id: string;
+  reward_id: string;
+  points_spent: number;
+  status: string;
+  idempotency_key: string;
+  redeemed_at: string;
+  reward_title?: string;
+  reward_description?: string;
+}
+
+export interface RewardsOverview {
+  total_points_awarded: number;
+  total_points_redeemed: number;
+  total_redemptions_count: number;
+  active_rewards_count: number;
+  pending_records_count: number;
+}
+
+export interface RewardRule {
+  category_id: string;
+  code: string;
+  name: string;
+  description?: string;
+  base_points: number;
+  points_per_kg: number;
+  is_active: boolean;
 }
 
 export interface PointsLedgerEntry {

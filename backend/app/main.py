@@ -19,6 +19,8 @@ async def lifespan(app: FastAPI):
     # Ensure uploads directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
+
+
     yield
 
     # Clean up pools on shutdown
