@@ -4,7 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.deps import get_current_user, require_admin
 from app.repositories.base import Badge, LeaderboardEntry, PointsLedgerEntry, Redemption, Reward, User, UserBadge
-from app.schemas.domain import RedemptionResponse, RewardCreateRequest, RewardRedeemRequest, RewardResponse
+from app.schemas.domain import (
+    RedemptionResponse,
+    RewardCreateRequest,
+    RewardRedeemRequest,
+    RewardResponse,
+    RewardRuleResponse,
+    RewardRuleUpdateRequest,
+    RewardUpdateRequest,
+    RewardsOverviewResponse,
+)
 from app.services.rewards_service import RewardsService
 
 router = APIRouter(prefix="/api/v1/rewards", tags=["Rewards & Gamification"])
@@ -82,7 +91,29 @@ async def list_all_badges():
     return await rewards_service.list_all_badges()
 
 
-# Admin Reward Management
+# Admin Reward Management & Dashboard Endpoints
+@router.get("/admin/overview", response_model=RewardsOverviewResponse)
+async def get_rewards_overview(admin: User = Depends(require_admin)):
+    data = await rewards_service.get_admin_overview()
+    return RewardsOverviewResponse(**data)
+
+
+@router.get("/admin/all", response_model=List[RewardResponse])
+async def list_all_rewards_admin(admin: User = Depends(require_admin)):
+    rewards = await rewards_service.list_all_rewards()
+    return [
+        RewardResponse(
+            reward_id=r.reward_id,
+            title=r.title,
+            description=r.description,
+            points_cost=r.points_cost,
+            stock_quantity=r.stock_quantity,
+            is_active=r.is_active,
+        )
+        for r in rewards
+    ]
+
+
 @router.post("", response_model=RewardResponse, status_code=status.HTTP_201_CREATED)
 async def create_reward(
     req: RewardCreateRequest,
@@ -93,6 +124,7 @@ async def create_reward(
         description=req.description,
         points_cost=req.points_cost,
         stock_quantity=req.stock_quantity,
+        is_active=req.is_active,
     )
     return RewardResponse(
         reward_id=rew.reward_id,
@@ -107,7 +139,7 @@ async def create_reward(
 @router.put("/{reward_id}", response_model=RewardResponse)
 async def update_reward(
     reward_id: UUID,
-    req: RewardCreateRequest,
+    req: RewardUpdateRequest,
     admin: User = Depends(require_admin),
 ):
     rew = await rewards_service.update_reward(
@@ -127,4 +159,56 @@ async def update_reward(
         points_cost=rew.points_cost,
         stock_quantity=rew.stock_quantity,
         is_active=rew.is_active,
+    )
+
+
+@router.delete("/{reward_id}")
+async def delete_reward(
+    reward_id: UUID,
+    admin: User = Depends(require_admin),
+):
+    deleted = await rewards_service.delete_reward(reward_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reward not found.")
+    return {"success": True, "message": "Reward removed successfully."}
+
+
+@router.get("/rules", response_model=List[RewardRuleResponse])
+async def list_reward_rules(admin: User = Depends(require_admin)):
+    categories = await rewards_service.list_rules()
+    return [
+        RewardRuleResponse(
+            category_id=c.category_id,
+            code=c.code,
+            name=c.name,
+            description=c.description,
+            base_points=c.base_points,
+            points_per_kg=c.points_per_kg,
+            is_active=c.is_active,
+        )
+        for c in categories
+    ]
+
+
+@router.put("/rules/{category_id}", response_model=RewardRuleResponse)
+async def update_reward_rule(
+    category_id: UUID,
+    req: RewardRuleUpdateRequest,
+    admin: User = Depends(require_admin),
+):
+    cat = await rewards_service.update_rule(
+        category_id=category_id,
+        base_points=req.base_points,
+        points_per_kg=req.points_per_kg,
+    )
+    if not cat:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
+    return RewardRuleResponse(
+        category_id=cat.category_id,
+        code=cat.code,
+        name=cat.name,
+        description=cat.description,
+        base_points=cat.base_points,
+        points_per_kg=cat.points_per_kg,
+        is_active=cat.is_active,
     )

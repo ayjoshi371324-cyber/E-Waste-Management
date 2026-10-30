@@ -166,6 +166,14 @@ class MockCatalogRepo(CatalogRepoBase):
         self.store.categories[cat_id] = cat
         return cat
 
+    async def update_category_points(self, category_id: UUID, base_points: int, points_per_kg: float) -> Optional[DeviceCategory]:
+        cat = self.store.categories.get(category_id)
+        if not cat:
+            return None
+        cat.base_points = base_points
+        cat.points_per_kg = points_per_kg
+        return cat
+
     async def get_category_materials(self, category_id: UUID) -> List[CategoryMaterial]:
         return self.store.category_materials.get(category_id, [])
 
@@ -595,6 +603,29 @@ class MockRewardsRepo(RewardsRepoBase):
 
     async def list_active_rewards(self) -> List[Reward]:
         return sorted([r for r in self.store.rewards.values() if r.is_active], key=lambda r: r.points_cost)
+
+    async def list_all_rewards(self) -> List[Reward]:
+        return sorted(list(self.store.rewards.values()), key=lambda r: r.points_cost)
+
+    async def delete_reward(self, reward_id: UUID) -> bool:
+        if reward_id in self.store.rewards:
+            del self.store.rewards[reward_id]
+            return True
+        return False
+
+    async def get_admin_overview(self) -> Dict[str, Any]:
+        total_awarded = sum(e.points for e in self.store.ledger if e.points > 0)
+        total_redeemed = abs(sum(e.points for e in self.store.ledger if e.points < 0))
+        total_redemptions = len(self.store.redemptions)
+        active_rewards = sum(1 for r in self.store.rewards.values() if r.is_active)
+        pending_records = sum(1 for r in self.store.records.values() if r.status == "pending")
+        return {
+            "total_points_awarded": total_awarded,
+            "total_points_redeemed": total_redeemed,
+            "total_redemptions_count": total_redemptions,
+            "active_rewards_count": active_rewards,
+            "pending_records_count": pending_records,
+        }
 
     async def get_by_id(self, reward_id: UUID) -> Optional[Reward]:
         return self.store.rewards.get(reward_id)

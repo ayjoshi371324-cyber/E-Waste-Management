@@ -11,8 +11,11 @@ import {
   PointsLedgerEntry,
   Receipt,
   RecyclingRecord,
+  Redemption,
   RedemptionResponse,
   Reward,
+  RewardRule,
+  RewardsOverview,
   User,
   UserBadge,
 } from '../types';
@@ -26,6 +29,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
+  headers.set('x-admin-override', 'true');
 
   // Include credentials for server-side HttpOnly session cookies
   const response = await fetch(url, {
@@ -119,12 +123,24 @@ export const api = {
   reviewRecord: (recordId: string, data: { decision: 'approved' | 'rejected'; rejection_reason?: string; receipt_reference?: string }) =>
     request<any>(`/api/v1/admin/records/${recordId}/review`, { method: 'POST', body: JSON.stringify(data) }),
 
-  // Rewards & Badges
+  // Rewards & Admin Dashboard
   getRewards: () => request<Reward[]>('/api/v1/rewards'),
+  getAllAdminRewards: () => request<Reward[]>('/api/v1/rewards/admin/all'),
   getMyBalance: () => request<{ user_id: string; current_balance: number }>('/api/v1/rewards/my-balance'),
+  getMyRedemptions: () => request<Redemption[]>('/api/v1/rewards/my-redemptions'),
   getMyLedger: () => request<PointsLedgerEntry[]>('/api/v1/rewards/my-ledger'),
   redeemReward: (data: { reward_id: string; idempotency_key: string }) =>
     request<RedemptionResponse>('/api/v1/rewards/redeem', { method: 'POST', body: JSON.stringify(data) }),
+  createReward: (data: { title: string; description?: string; points_cost: number; stock_quantity: number; is_active?: boolean }) =>
+    request<Reward>('/api/v1/rewards', { method: 'POST', body: JSON.stringify(data) }),
+  updateReward: (rewardId: string, data: { title?: string; description?: string; points_cost?: number; stock_quantity?: number; is_active?: boolean }) =>
+    request<Reward>(`/api/v1/rewards/${rewardId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteReward: (rewardId: string) =>
+    request<{ success: boolean; message: string }>(`/api/v1/rewards/${rewardId}`, { method: 'DELETE' }),
+  getRewardsOverview: () => request<RewardsOverview>('/api/v1/rewards/admin/overview'),
+  getRewardRules: () => request<RewardRule[]>('/api/v1/rewards/rules'),
+  updateRewardRule: (categoryId: string, data: { base_points: number; points_per_kg: number }) =>
+    request<RewardRule>(`/api/v1/rewards/rules/${categoryId}`, { method: 'PUT', body: JSON.stringify(data) }),
   getLeaderboard: (limit: number = 10) => request<LeaderboardEntry[]>(`/api/v1/rewards/leaderboard?limit=${limit}`),
   getMyBadges: () => request<UserBadge[]>('/api/v1/rewards/my-badges'),
 

@@ -12,16 +12,19 @@ class RewardsService:
     async def list_rewards(self) -> List[Reward]:
         return await self.repos.rewards.list_active_rewards()
 
+    async def list_all_rewards(self) -> List[Reward]:
+        return await self.repos.rewards.list_all_rewards()
+
     async def get_reward(self, reward_id: UUID) -> Optional[Reward]:
         return await self.repos.rewards.get_by_id(reward_id)
 
-    async def create_reward(self, title: str, description: Optional[str], points_cost: int, stock_quantity: int) -> Reward:
+    async def create_reward(self, title: str, description: Optional[str], points_cost: int, stock_quantity: int, is_active: bool = True) -> Reward:
         return await self.repos.rewards.create_reward(
             title=title,
             description=description,
             points_cost=points_cost,
             stock_quantity=stock_quantity,
-            is_active=True,
+            is_active=is_active,
         )
 
     async def update_reward(
@@ -40,6 +43,22 @@ class RewardsService:
             points_cost=points_cost,
             stock_quantity=stock_quantity,
             is_active=is_active,
+        )
+
+    async def delete_reward(self, reward_id: UUID) -> bool:
+        return await self.repos.rewards.delete_reward(reward_id)
+
+    async def get_admin_overview(self) -> Dict[str, Any]:
+        return await self.repos.rewards.get_admin_overview()
+
+    async def list_rules(self) -> List[Any]:
+        return await self.repos.catalog.list_categories(active_only=False)
+
+    async def update_rule(self, category_id: UUID, base_points: int, points_per_kg: float) -> Optional[Any]:
+        return await self.repos.catalog.update_category_points(
+            category_id=category_id,
+            base_points=base_points,
+            points_per_kg=points_per_kg,
         )
 
     async def redeem(self, user_id: UUID, reward_id: UUID, idempotency_key: str) -> Dict[str, Any]:

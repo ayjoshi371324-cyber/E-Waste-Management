@@ -73,6 +73,24 @@ class PgCatalogRepo(CatalogRepoBase):
                 row = cur.fetchone()
                 return DeviceCategory(**row)
 
+    async def update_category_points(self, category_id: UUID, base_points: int, points_per_kg: float) -> Optional[DeviceCategory]:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE device_categories
+                    SET base_points = %s,
+                        points_per_kg = %s
+                    WHERE category_id = %s
+                    RETURNING category_id, code, name, description, handling_priority, base_points, points_per_kg, is_active, created_at
+                    """,
+                    (base_points, points_per_kg, category_id)
+                )
+                row = cur.fetchone()
+                if row:
+                    return DeviceCategory(**row)
+                return None
+
     async def get_category_materials(self, category_id: UUID) -> List[CategoryMaterial]:
         with get_db_connection() as conn:
             with conn.cursor() as cur:

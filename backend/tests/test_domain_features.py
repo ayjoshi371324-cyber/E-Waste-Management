@@ -292,3 +292,65 @@ async def test_ai_photo_classification(citizen_client: AsyncClient):
     assert "predicted_category_code" in data
     assert data["confidence"] > 0.0
     assert len(data["top_predictions"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_admin_rewards_management_and_rules(admin_client: AsyncClient, citizen_client: AsyncClient):
+    # 1. Non-admin forbidden from admin rewards overview
+    denied_resp = await citizen_client.get("/api/v1/rewards/admin/overview")
+    assert denied_resp.status_code == 403
+
+    # 2. Admin can view rewards overview metrics
+    overview_resp = await admin_client.get("/api/v1/rewards/admin/overview")
+    assert overview_resp.status_code == 200
+    ov = overview_resp.json()
+    assert "total_points_awarded" in ov
+    assert "total_points_redeemed" in ov
+    assert "active_rewards_count" in ov
+
+    # 3. Admin can list all rewards (including inactive ones)
+    all_rew_resp = await admin_client.get("/api/v1/rewards/admin/all")
+    assert all_rew_resp.status_code == 200
+    assert len(all_rew_resp.json()) >= 4
+
+    # 4. Admin creates a new reward
+    new_reward_resp = await admin_client.post(
+        "/api/v1/rewards",
+        json={
+            "title": "Recycled Plastic Bottle",
+            "description": "BPA-free reusable bottle",
+            "points_cost": 200,
+            "stock_quantity": 25,
+            "is_active": True,
+        },
+    )
+    assert new_reward_resp.status_code == 201
+    created_rew = new_reward_resp.json()
+    rew_id = created_rew["reward_id"]
+
+    # 5. Admin updates the reward
+    update_resp = await admin_client.put(
+        f"/api/v1/rewards/{rew_id}",
+        json={"points_cost": 180, "stock_quantity": 30},
+    )
+    assert update_resp.status_code == 200
+    assert update_resp.json()["points_cost"] == 180
+
+    # 6. Admin views and updates reward rules
+    rules_resp = await admin_client.get("/api/v1/rewards/rules")
+    assert rules_resp.status_code == 200
+    rules = rules_resp.json()
+    assert len(rules) >= 6
+    target_cat = rules[0]
+
+    update_rule_resp = await admin_client.put(
+        f"/api/v1/rewards/rules/{target_cat['category_id']}",
+        json={"base_points": 75, "points_per_kg": 30.0},
+    )
+    assert update_rule_resp.status_code == 200
+    assert update_rule_resp.json()["base_points"] == 75
+
+    # 7. Admin deletes the created reward
+    del_resp = await admin_client.delete(f"/api/v1/rewards/{rew_id}")
+    assert del_resp.status_code == 200
+    assert del_resp.json()["success"] is True

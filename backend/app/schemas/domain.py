@@ -96,6 +96,7 @@ class RecordResponse(BaseModel):
     estimated_units: int
     status: str
     notes: Optional[str] = None
+    photo_id: Optional[UUID] = None
     receipt_reference: Optional[str] = None
     created_at: datetime
     category_name: Optional[str] = None
@@ -135,9 +136,40 @@ class RewardResponse(BaseModel):
 class RewardCreateRequest(BaseModel):
     title: str = Field(min_length=2, max_length=200)
     description: Optional[str] = None
-    points_cost: int = Field(gt=0)
-    stock_quantity: int = Field(ge=0)
+    points_cost: int = Field(gt=0, description="Points cost must be greater than zero")
+    stock_quantity: int = Field(ge=0, description="Stock quantity cannot be negative")
     is_active: bool = True
+
+
+class RewardUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=2, max_length=200)
+    description: Optional[str] = None
+    points_cost: Optional[int] = Field(None, gt=0)
+    stock_quantity: Optional[int] = Field(None, ge=0)
+    is_active: Optional[bool] = None
+
+
+class RewardsOverviewResponse(BaseModel):
+    total_points_awarded: int
+    total_points_redeemed: int
+    total_redemptions_count: int
+    active_rewards_count: int
+    pending_records_count: int
+
+
+class RewardRuleResponse(BaseModel):
+    category_id: UUID
+    code: str
+    name: str
+    description: Optional[str] = None
+    base_points: int
+    points_per_kg: float
+    is_active: bool
+
+
+class RewardRuleUpdateRequest(BaseModel):
+    base_points: int = Field(ge=0, description="Base points must be greater than or equal to 0")
+    points_per_kg: float = Field(ge=0.0, description="Points per kg must be greater than or equal to 0")
 
 
 class RewardRedeemRequest(BaseModel):
